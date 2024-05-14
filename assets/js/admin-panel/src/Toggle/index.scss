@@ -1,0 +1,105 @@
+.wa-toggle_header {
+    display: flex;
+    align-items: center;
+}
+
+.wa-toggle_description {
+    margin-top: 8px;
+}
+
+.wa-toggle_header > * + * {
+    margin-left: 9px;
+}
+
+.wa-toggle_control__container {
+    display: grid;
+    grid-template: auto / 1fr auto;
+}
+
+.wa-toggle_control__container {
+    position: relative;
+    width: 43px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+input.wa-toggle_control__input {
+    display: none;
+}
+
+.wa-toggle_control__toggler {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid #c8c9c9;
+    border-radius: 3px;
+    padding: 0;
+    margin: 0 !important;
+}
+
+.wa-toggle_control__toggler > span:nth-child(1) {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+
+.wa-toggle_control__toggler > span:nth-child(1):before,
+.wa-toggle_control__toggler > span:nth-child(1):after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 19px;
+    padding: 0;
+    line-height: 19px;
+    font-size: 19px;
+    color: white;
+    font-family: dashicons;
+    box-sizing: border-box;
+}
+
+.wa-toggle_control__toggler > span:nth-child(1):before {
+    content: "\f147";
+    content: "\f15e";
+    padding-left: 2px;
+    background-color: #2885bb;
+    color: #fff;
+}
+
+.wa-toggle_control__toggler > span:nth-child(1):after {
+    content: "\f158";
+    content: "\f335";
+    padding-right: 2px;
+    font-size: 21px;
+    background-color: #eee;
+    color: #999;
+    text-align: right;
+}
+
+.wa-toggle_control__toggler > span:nth-child(2) {
+    display: block;
+    width: 13px;
+    height: 13px;
+    margin: 3px;
+    background-color: #fff;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 22px;
+    border: 1px solid #c8c9c9;
+    border-radius: 3px;
+    transition: all 0.3s ease-in 0s;
+}
+
+.wa-toggle_control__input:checked
+    + .wa-toggle_control__toggler
+    > span:nth-child(1) {
+    margin-left: 0;
+}
+
+.wa-toggle_control__input:checked
+    + .wa-toggle_control__toggler
+    > span:nth-child(2) {
+    right: 0px;
+}

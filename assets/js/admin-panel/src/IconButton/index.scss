@@ -1,0 +1,61 @@
+.wa-icon-button {
+    padding: 0px;
+    border: 0px;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    position: relative;
+    display: inline-block;
+}
+.wa-icon-button .dashicons{
+    line-height: unset;
+}
+.wa-icon-button:not(.inherit-color) {
+    color: #c3c4c7;
+    transition: opacity 0.5s ease-in-out;
+}
+.wa-icon-button.inherit-color > * {
+    transition: none;
+}
+.wa-icon-button:not(.inherit-color):hover {
+    color: #2271b1;
+}
+.wa-icon-button:not(.inherit-color).active {
+    color: #2271b1;
+}
+.wa-icon-button.active:hover {
+    color: black;
+}
+
+.wa-tooltip {
+    width: max-content;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 3px 8px 5px 8px;
+    border-radius: 2px;
+    color: darkgrey;
+    border: 1px solid #cfcfcf;
+    background: #fbfbfc;
+    box-shadow: 0px 2px 3px rgba(147, 147, 147, 0.30196);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.3s,
+        visibility 0.3s;
+    z-index: 1;
+}
+.wa-tooltip.top {
+    transform: translate(-50%, -100%);
+}
+.wa-tooltip.left {
+    transform: translate(-100%, -50%);
+}
+.wa-tooltip.right {
+    transform: translate(0%, -50%);
+}
+.wa-tooltip.visible {
+    opacity: 1;
+    transition-delay: 0.4s;
+    visibility: visible;
+}
