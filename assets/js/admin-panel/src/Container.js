@@ -5,7 +5,10 @@ export default function Container({ title, children, titleButtons, ...props }) {
     if (Array.isArray(titleButtons)) {
         titleButtonsContent = titleButtons.map(
             ([icon, onClick, tooltip]) =>
-                icon && onClick && <IconButton type={icon} onClick={onClick} tooltip={tooltip} />,
+                icon &&
+                onClick && (
+                    <IconButton style={{ marginLeft: "10px" }} type={icon} onClick={onClick} tooltip={tooltip} />
+                ),
         );
     }
     return (

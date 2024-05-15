@@ -3,6 +3,7 @@ import { useState, useLayoutEffect, useRef } from "react";
 import classes from "classnames";
 import { Base64 } from "./services";
 import WaTabs from "./WaTabs";
+import LoggerSettings from "./LoggerSettings";
 
 const defaultConfig = {
     forms: [],
@@ -58,15 +59,12 @@ export default function WaCF7Panel() {
     };
     return (
         <div className="wacf7-container">
-            <Container title="Заголовок">
-                Hello world
-                <WaTabs>
-                    {{
-                        "Визуальные настройки": "HTML-справка",
-                        "CSV-логирование сообщений": "tab2",
-                    }}
-                </WaTabs>
-            </Container>
+            <WaTabs>
+                {{
+                    "Визуальные настройки": "HTML-справка",
+                    "CSV-логирование сообщений": <LoggerSettings />,
+                }}
+            </WaTabs>
             <Container title="Сохранение" style={{ minWidth: "200px", maxWidth: "300px", flexGrow: 0 }}>
                 <button
                     onClick={onSaveHandler}
