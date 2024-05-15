@@ -2,6 +2,7 @@ import Container from "./Container";
 import { useState, useLayoutEffect, useRef } from "react";
 import classes from "classnames";
 import { Base64 } from "./services";
+import WaTabs from "./WaTabs";
 
 const defaultConfig = {
   forms: [],
@@ -58,7 +59,15 @@ export default function WaCF7Panel() {
   };
   return (
     <div className="wacf7-container">
-      <Container title="Заголовок">Hello world</Container>
+      <Container title="Заголовок">
+        Hello world
+        <WaTabs>
+          {{
+            tab1: "tab1",
+            tab2: "tab2",
+          }}
+        </WaTabs>
+      </Container>
       <Container
         title="Сохранение"
         style={{ minWidth: "200px", maxWidth: "300px", flexGrow: 0 }}
