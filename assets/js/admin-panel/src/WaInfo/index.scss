@@ -1,0 +1,41 @@
+.wa-info {
+    padding: 7px 10px;
+    margin: 0px;
+    width: max-content;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+.wa-info .dashicons {
+    color: #2271b1;
+    margin-right: 9px;
+}
+.wa-info-text {
+    color: #7d7d7d;
+    font-style: italic;
+    line-height: 16px;
+}
+.wa-info-error {
+    border: 1px solid #9b2323;
+    border-left-width: 3px;
+    background: #fff6f6;
+}
+.wa-info-error .wa-info-text {
+    color: #804646;
+}
+.wa-info-error .dashicons {
+    color: #9b2323;
+}
+.wa-info-warning {
+    border: 1px solid #744527;
+    border-left-width: 3px;
+    background: #fffaf6;
+}
+.wa-info-warning .wa-info-text {
+    color: #805b46;
+}
+.wa-info-warning .dashicons {
+    color: #744527;
+}
