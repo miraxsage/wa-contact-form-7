@@ -1,0 +1,172 @@
+/* bg:e4e4e4 , border: #dbdbdb -> light */
+/* bg:1e1f26 , border: #2d2e36 -> dark */
+
+.wa-autocomplete {
+    display: block;
+    border-radius: 4px;
+    position: relative;
+    transition: background 0.3s ease;
+    color: #414649;
+    background: white;
+    & .dashicons {
+        color: #a7a7a7;
+    }
+    &.wa-autocomplete-focused {
+        .wa-autocomplete-control {
+            border: 1px solid #2271b1;
+            border-bottom-color: transparent;
+            border-radius: 4px 4px 0px 0px;
+        }
+    }
+    & .input-empty-tail {
+        cursor: text;
+        flex-grow: 1;
+        position: relative;
+        height: 20px;
+        inset: -1px 0px 0px -1px;
+    }
+}
+
+.wa-autocomplete-control {
+    display: flex;
+    gap: 1px;
+    align-items: center;
+    border-radius: 4px;
+    padding: 3px 5px 3px 6px;
+    border: 1px solid #c7c7c7;
+    min-height: 32px;
+    box-sizing: border-box;
+    &_multiple {
+        flex-wrap: wrap;
+        padding-bottom: 0px;
+        input {
+            position: relative;
+            top: -2px;
+        }
+    }
+}
+.wa-autocomplete-control_invalid {
+    border-color: #c73d3d;
+    background: #fff3f3;
+    & input {
+        color: #a32525;
+        background: #fff3f3;
+    }
+}
+
+.wa-autocomplete-control input,
+.wa-autocomplete-control input:focus {
+    border-radius: 0;
+    padding: 0;
+    outline: none;
+    border: none;
+    box-shadow: none;
+    line-height: 1;
+    min-height: 20px;
+    margin-left: 2px;
+}
+
+.wa-autocomplete-suggestions {
+    position: absolute;
+    left: 0px;
+    z-index: 999;
+    width: 100%;
+    box-sizing: border-box;
+    max-height: 200px;
+    overflow: auto;
+    background: white;
+    border: 1px solid #2271b1;
+    border-width: 0px 1px 1px 1px;
+    border-radius: 0px 0px 4px 4px;
+}
+
+.wa-autocomplete-suggestions .wa-suggestion-item {
+    border-bottom: 1px solid #efefef;
+    padding: 4px 5px 6px 7px;
+    transition: all 0.3s;
+    cursor: default;
+    &:not(.none) {
+        cursor: pointer;
+    }
+}
+.wa-autocomplete-suggestions .wa-suggestion-item.active {
+    background: #2271b1;
+    border-bottom: 1px solid #2271b1;
+    color: white;
+    & .dashicons {
+        color: white;
+    }
+}
+.wa-autocomplete-suggestions .wa-suggestion-item:not(.active):not(.none):hover {
+    background: #f1faff;
+    &:not(:last-child) {
+        border-bottom: 1px solid #2271b1;
+    }
+}
+.icon-size-18 {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+.icon-size-16 {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+.icon-size-14 {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+}
+.icon-size-12 {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+}
+.wa-autocomplete-suggestions .wa-suggestion-item-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.wa-autocomplete-suggestions .wa-suggestion-item-title-bold {
+    font-weight: bold;
+}
+.wa-autocomplete-suggestions .wa-suggestion-item-descr {
+    font-style: italic;
+    font-size: 12px;
+    line-height: 14px;
+    color: #777474;
+}
+.wa-autocomplete-suggestions .wa-suggestion-item.active .wa-suggestion-item-descr {
+    color: #ebebeb;
+}
+
+.wa-autocomplete-tag {
+    padding: 0px 0px 0px 6px;
+    border: 1px solid #c7c7c7;
+    border-radius: 3px;
+    margin-right: 5px;
+    background: white;
+    white-space: nowrap;
+    margin-bottom: 3px;
+    &:hover {
+        background: #f1f1f1;
+    }
+    &:has(.dashicons.dashicons-plus-alt2:hover) {
+        background: #ffefef;
+        border-color: #c73d3d;
+        color: #a32525;
+    }
+}
+.wa-autocomplete-tag > .dashicons.dashicons-plus-alt2 {
+    font-size: 16px;
+    transform: rotate(45deg);
+    position: relative;
+    top: 1.8px;
+    left: -2px;
+    padding: 0;
+    cursor: pointer;
+    &:hover {
+        color: #bb3030;
+    }
+}
