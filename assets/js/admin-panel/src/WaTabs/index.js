@@ -1,5 +1,5 @@
 import { React, useState, useEffect } from "react";
-import "./style.scss";
+import "./index.scss";
 import WaTab from "./WaTab";
 
 export default function WaTabs({ children, selectedTab, style, header, footer }) {

@@ -1,167 +1,123 @@
 .wa-container {
-  border: 1px solid #c3c4c7;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-  background: #f6f7f7;
-  padding: 7px;
+    border: 1px solid #c3c4c7;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    background: #f6f7f7;
+    padding: 7px;
 }
 .wa-container-title {
-  margin: -7px -7px 7px -7px;
-  padding: 8px 12px;
-  border-bottom: 1px solid #dcdcde;
-  font-weight: 600;
-  background: #fff;
+    margin: -7px -7px 7px -7px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #dcdcde;
+    font-weight: 600;
+    display: flex;
+    background: #fff;
+    & > :first-child {
+        flex-grow: 1;
+    }
 }
 .wacf7-container {
-  display: flex;
-  gap: 5px;
-  margin: 17px 13px 0px 0px;
+    display: flex;
+    gap: 5px;
+    margin: 17px 13px 0px 0px;
 }
 @media screen and (max-width: 1150px) {
-  .wacf7-container {
-    flex-direction: column;
-  }
+    .wacf7-container {
+        flex-direction: column;
+    }
 }
 .wacf7-container > *:nth-child(1) {
-  flex-grow: 1.5;
+    flex-grow: 1.5;
 }
 .wacf7-container > *:nth-child(2) {
-  flex-grow: 1;
+    flex-grow: 1;
 }
 .wacf7-container > *:nth-child(3) {
-  flex-grow: 0;
+    flex-grow: 0;
 }
 
 /* Статусные сообщения */
 .wa-error-message,
 .wa-success-message {
-  background: #fff;
-  border: 1px solid #c3c4c7;
-  border-left-width: 4px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-  margin: 5px 0px 5px;
-  padding: 5px 12px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-left-width: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin: 5px 0px 5px;
+    padding: 5px 12px;
 }
 .wa-error-message {
-  border-left-color: #d63638;
-  background-color: #fff2f2;
+    border-left-color: #d63638;
+    background-color: #fff2f2;
 }
 .wa-success-message {
-  border-left-color: #21be50;
+    border-left-color: #21be50;
 }
 
 .button.button-primary.success-button {
-  background: #389144;
-  border-color: #1f6f2a;
+    background: #389144;
+    border-color: #1f6f2a;
 }
 .button.button-primary.success-button:hover {
-  background: #1f6f2a;
+    background: #1f6f2a;
 }
 .button.button-primary.success-button:focus {
-  box-shadow:
-    0 0 0 1px #fff,
-    0 0 0 3px #1f6f2a;
+    box-shadow:
+        0 0 0 1px #fff,
+        0 0 0 3px #1f6f2a;
 }
 
 /* Анимация лоадера */
 .button-loader {
-  position: relative;
+    position: relative;
 }
 .button-loader:before {
-  content: "";
-  width: 13px;
-  position: absolute;
-  display: inline-block;
-  aspect-ratio: 1;
-  top: 0px;
-  left: -25px;
-  border-radius: 50%;
-  border: 2px solid white;
-  animation:
-    l20-1 0.8s infinite linear alternate,
-    l20-2 1.6s infinite linear;
+    content: "";
+    width: 13px;
+    position: absolute;
+    display: inline-block;
+    aspect-ratio: 1;
+    top: 0px;
+    left: -25px;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation:
+        l20-1 0.8s infinite linear alternate,
+        l20-2 1.6s infinite linear;
 }
 @keyframes l20-1 {
-  0% {
-    clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
-  }
-  12.5% {
-    clip-path: polygon(
-      50% 50%,
-      0 0,
-      50% 0%,
-      100% 0%,
-      100% 0%,
-      100% 0%,
-      100% 0%
-    );
-  }
-  25% {
-    clip-path: polygon(
-      50% 50%,
-      0 0,
-      50% 0%,
-      100% 0%,
-      100% 100%,
-      100% 100%,
-      100% 100%
-    );
-  }
-  50% {
-    clip-path: polygon(
-      50% 50%,
-      0 0,
-      50% 0%,
-      100% 0%,
-      100% 100%,
-      50% 100%,
-      0% 100%
-    );
-  }
-  62.5% {
-    clip-path: polygon(
-      50% 50%,
-      100% 0,
-      100% 0%,
-      100% 0%,
-      100% 100%,
-      50% 100%,
-      0% 100%
-    );
-  }
-  75% {
-    clip-path: polygon(
-      50% 50%,
-      100% 100%,
-      100% 100%,
-      100% 100%,
-      100% 100%,
-      50% 100%,
-      0% 100%
-    );
-  }
-  100% {
-    clip-path: polygon(
-      50% 50%,
-      50% 100%,
-      50% 100%,
-      50% 100%,
-      50% 100%,
-      50% 100%,
-      0% 100%
-    );
-  }
+    0% {
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+    }
+    12.5% {
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%);
+    }
+    25% {
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%);
+    }
+    50% {
+        clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%);
+    }
+    62.5% {
+        clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%);
+    }
+    75% {
+        clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%);
+    }
+    100% {
+        clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%);
+    }
 }
 @keyframes l20-2 {
-  0% {
-    transform: scaleY(1) rotate(0deg);
-  }
-  49.99% {
-    transform: scaleY(1) rotate(135deg);
-  }
-  50% {
-    transform: scaleY(-1) rotate(0deg);
-  }
-  100% {
-    transform: scaleY(-1) rotate(-135deg);
-  }
+    0% {
+        transform: scaleY(1) rotate(0deg);
+    }
+    49.99% {
+        transform: scaleY(1) rotate(135deg);
+    }
+    50% {
+        transform: scaleY(-1) rotate(0deg);
+    }
+    100% {
+        transform: scaleY(-1) rotate(-135deg);
+    }
 }
