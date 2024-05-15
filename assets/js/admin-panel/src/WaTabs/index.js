@@ -1,92 +1,55 @@
-import { React } from "react";
-import { Component } from "@wordpress/element";
+import { React, useState, useEffect } from "react";
 import "./style.scss";
 import WaTab from "./WaTab";
 
-class WaTabs extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { activeTab: Object.keys(props.children)[0] };
-    this.onActiveTabChange = this.onActiveTabChange.bind(this);
-  }
+export default function WaTabs({ children, selectedTab, style, header, footer }) {
+    const [activeTab, setActiveTab] = useState(Object.keys(children)[0]);
 
-  onActiveTabChange(newActiveTab) {
-    newActiveTab = newActiveTab.replace("_", " ");
-    if (newActiveTab !== this.state.activeTab)
-      this.setState({ activeTab: newActiveTab });
-  }
+    const onActiveTabChange = (newActiveTab) => {
+        newActiveTab = newActiveTab.replace("_", " ");
+        if (newActiveTab !== activeTab) setActiveTab(newActiveTab);
+    };
 
-  updateTab() {
-    if (typeof this.props.selectedTab == "number") {
-      const selectedTab = Number(this.props.selectedTab);
-      const tabNames = Object.keys(this.props.children);
-      if (
-        selectedTab >= 0 &&
-        Number(this.props.selectedTab) <= tabNames.length &&
-        this.state.activeTab != tabNames[selectedTab]
-      )
-        this.setState({
-          ...this.state,
-          activeTab: tabNames[selectedTab],
-        });
-    }
-    if (
-      typeof this.props.selectedTab == "string" &&
-      this.props.selectedTab in this.props.children &&
-      this.props.selectedTab != this.state.activeTab
-    ) {
-      this.setState({
-        ...this.state,
-        activeTab: this.props.selectedTab,
-      });
-    }
-  }
+    const updateTab = () => {
+        if (typeof selectedTab == "number") {
+            const selectedTab = Number(selectedTab);
+            const tabNames = Object.keys(children);
+            if (selectedTab >= 0 && Number(props.selectedTab) <= tabNames.length && activeTab != tabNames[selectedTab])
+                setActiveTab(tabNames[selectedTab]);
+        }
+        if (typeof selectedTab == "string" && selectedTab in children && selectedTab != activeTab)
+            setActiveTab(selectedTab);
+    };
 
-  componentDidMount() {
-    this.updateTab();
-  }
-  componentDidUpdate() {
-    this.updateTab();
-  }
+    useEffect(() => {
+        updateTab();
+    }, selectedTab);
 
-  render() {
-    const { children, header, footer } = this.props;
     return (
-      <div
-        style={this.props.style ?? {}}
-        class="wa-tabs cf-container cf-container-carbon_fields_container_wa_common_settings cf-container-theme-options cf-container--tabbed cf-container--tabbed-horizontal"
-      >
-        <div class="cf-container__tabs cf-container__tabs--tabbed-horizontal">
-          <ul class="cf-container__tabs-list">
-            {Object.keys(children).map((k) => (
-              <WaTab
-                title={k}
-                active={k == this.state.activeTab}
-                onClick={this.onActiveTabChange}
-              />
-            ))}
-          </ul>
-        </div>
-        <div class="cf-container__fields">
-          {Object.keys(children).map((k) => (
-            <div
-              style={{
-                display: k == this.state.activeTab ? "block" : "none",
-                position: "relative",
-              }}
-              class="cf-field__body"
-            >
-              {typeof children[k] === "function"
-                ? children[k]({
-                    onActiveTabChange: this.onActiveTabChange,
-                  })
-                : children[k]}
+        <div
+            style={style ?? {}}
+            class="wa-tabs cf-container cf-container-carbon_fields_container_wa_common_settings cf-container-theme-options cf-container--tabbed cf-container--tabbed-horizontal"
+        >
+            <div class="cf-container__tabs cf-container__tabs--tabbed-horizontal">
+                <ul class="cf-container__tabs-list">
+                    {Object.keys(children).map((k) => (
+                        <WaTab title={k} active={k == activeTab} onClick={onActiveTabChange} />
+                    ))}
+                </ul>
             </div>
-          ))}
+            <div class="cf-container__fields">
+                {Object.keys(children).map((k) => (
+                    <div
+                        style={{
+                            display: k == activeTab ? "block" : "none",
+                            position: "relative",
+                        }}
+                        class="cf-field__body"
+                    >
+                        {typeof children[k] === "function" ? children[k]({ onActiveTabChange }) : children[k]}
+                    </div>
+                ))}
+            </div>
         </div>
-      </div>
     );
-  }
 }
-
-export default WaTabs;
