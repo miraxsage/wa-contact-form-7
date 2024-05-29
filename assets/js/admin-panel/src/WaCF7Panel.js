@@ -62,7 +62,9 @@ export default function WaCF7Panel() {
             <WaTabs>
                 {{
                     "Визуальные настройки": "HTML-справка",
-                    "CSV-логирование сообщений": <LoggerSettings />,
+                    "CSV-логирование сообщений": (
+                        <LoggerSettings config={config} onChange={(newConfig) => setConfig(newConfig)} />
+                    ),
                 }}
             </WaTabs>
             <Container title="Сохранение" style={{ minWidth: "200px", maxWidth: "300px", flexGrow: 0 }}>

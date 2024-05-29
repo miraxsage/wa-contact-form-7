@@ -1,2 +1,14 @@
 .logger-settings {
+    & .fix-logger-acmp-icon {
+        position: relative;
+        top: 2px;
+        left: -2px;
+    }
+    & .wa-autocomplete-tag:has(.dashicons.dashicons-plus-alt2:hover) .fix-logger-acmp-icon {
+        color: inherit;
+    }
+    & .wa-autocomplete-suggestions .fix-logger-acmp-icon {
+        top: 1px;
+        left: unset;
+    }
 }

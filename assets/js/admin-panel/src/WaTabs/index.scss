@@ -4,3 +4,82 @@
 .wa-tabs .cf-field__body {
     padding: 12px;
 }
+
+.cf-container__tabs-list .cf-container__tabs-item button {
+    background: 0;
+    border: 0;
+    padding: 10px 12px;
+    margin: 0;
+    flex: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.cf-container__tabs-item.cf-container__tabs-item--current:before {
+    content: "";
+    display: block;
+    height: 2px;
+    position: absolute;
+    background: #2271b1;
+    top: -1px;
+    width: 100%;
+}
+.cf-container__tabs-list .cf-container__tabs-item--current {
+    background-color: #fff;
+    border-bottom-color: #fff;
+}
+.cf-container__tabs-list .cf-container__tabs-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e2e4e7;
+    margin: 0 8px 0 0;
+    background-color: #fbfbfc;
+    font-size: 13px;
+    cursor: pointer;
+    transition:
+        background-color 0.1s linear,
+        border-color 0.1s linear;
+}
+.cf-container__tabs-item.cf-container__tabs-item--current {
+    position: relative;
+}
+.cf-container__tabs--tabbed-horizontal .cf-container__tabs-list {
+    display: flex;
+    flex-direction: row;
+}
+.cf-container__tabs-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 0 -1px;
+}
+.cf-container__tabs--tabbed-horizontal {
+    padding: 12px 12px 0;
+    border-bottom: 1px solid #e2e4e7;
+}
+.cf-container__tabs {
+    position: relative;
+    z-index: 1;
+    background-color: #fbfbfc;
+}
+
+.cf-container--tabbed-horizontal .cf-container__fields {
+    margin: 0px;
+}
+.cf-container__fields {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    margin: 0 -1px 0 0;
+    background-color: #fff;
+}
+
+.wa-tabs .cf-field__body {
+    padding: 12px;
+}
+.cf-field,
+.cf-field__body,
+.cf-field__head {
+    box-sizing: border-box;
+    flex: 1 1 100%;
+}
