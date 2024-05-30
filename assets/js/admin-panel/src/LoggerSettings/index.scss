@@ -11,4 +11,17 @@
         top: 1px;
         left: unset;
     }
+    & .toolbar {
+        display: flex;
+    }
+    .wa-container.form-adding {
+        border: 1px solid #58b16d;
+        & .wa-container-title {
+            background: #f5fff6;
+        }
+    }
+    & .wa-autocomplete-control input,
+    & .wa-autocomplete-control input:focus {
+        padding-bottom: 2px;
+    }
 }

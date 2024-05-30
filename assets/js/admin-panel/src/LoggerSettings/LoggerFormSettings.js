@@ -16,7 +16,28 @@ const standartFields = [
     },
 ];
 
-export default function FormLoggerSettings({ config, config: { id }, style, onDelete }) {
+function getFormTitle(formId) {
+    if (typeof wacf7Forms == "undefined") return "Форма #" + formId;
+    const form = wacf7Forms.find((f) => f.id == formId);
+    if (!form) return "Форма #" + formId;
+    return `Форма "${form.title}"`;
+}
+
+export default function FormLoggerSettings({
+    config,
+    config: { id },
+    style,
+    className,
+    onDelete,
+    onChange,
+    formsToAdd,
+}) {
+    let formsToAddVariants = [];
+    if (Array.isArray(formsToAdd))
+        formsToAddVariants = formsToAdd.map((f) => ({
+            id: f.id,
+            name: f.title,
+        }));
     const fieldsVariants = [
         ...standartFields,
         { id: "1", name: "your_name", iconClass: "dashicons dashicons-editor-textcolor" },
@@ -26,16 +47,43 @@ export default function FormLoggerSettings({ config, config: { id }, style, onDe
     fieldsVariants.forEach((f) => (f.iconClass = classes(f.iconClass, "icon-size-16 fix-logger-acmp-icon")));
     return (
         <Container
-            title={`Форма ${id}`}
+            className={className}
+            title={id == "newForm" ? "Добавление формы для логирования" : getFormTitle(id)}
             titleButtons={[
-                ["download", () => {}, "Скачать лог"],
-                ["trash", onDelete, "Удалить лог и форму"],
-                ["welcome-view-site", () => {}, "Просмотреть лог"],
+                ...(id == "newForm"
+                    ? [["cross", onDelete, "Отменить создание формы"]]
+                    : [
+                          ["download", () => {}, "Скачать лог"],
+                          ["trash", onDelete, "Удалить лог и форму"],
+                          ["welcome-view-site", () => {}, "Просмотреть лог"],
+                      ]),
             ]}
             style={style}
         >
-            <WaInfo>Укажите поля формы, которые будут сохраняться в файле логов при каждой отправке</WaInfo>
-            <WaAutoComplete multiple={true} inherit={true} data={fieldsVariants} />
+            {id == "newForm" ? (
+                <>
+                    <WaInfo>Выберите форму, сконфигурированную в CF7</WaInfo>
+                    <WaAutoComplete
+                        multiple={false}
+                        inherit={true}
+                        data={formsToAddVariants}
+                        onSelected={(v) => {
+                            if (v) onChange({ id: v.id });
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    <WaInfo>Укажите поля формы, которые будут сохраняться в файле логов при каждой отправке</WaInfo>
+                    <WaAutoComplete
+                        inherit={true}
+                        data={fieldsVariants}
+                        multiple={true}
+                        allowNotPresent={true}
+                        onSelected={(e) => console.log(e)}
+                    />
+                </>
+            )}
         </Container>
     );
 }

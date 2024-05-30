@@ -1,6 +1,7 @@
+import classes from "classnames";
 import IconButton from "./IconButton";
 
-export default function Container({ title, children, titleButtons, ...props }) {
+export default function Container({ title, children, titleButtons, className, ...props }) {
     let titleButtonsContent = [];
     if (Array.isArray(titleButtons)) {
         titleButtonsContent = titleButtons.map(
@@ -12,7 +13,7 @@ export default function Container({ title, children, titleButtons, ...props }) {
         );
     }
     return (
-        <div className="wa-container" {...props}>
+        <div className={classes("wa-container", className)} {...props}>
             {title && (
                 <div className="wa-container-title">
                     <span>{title}</span>

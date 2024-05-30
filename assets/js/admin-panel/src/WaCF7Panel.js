@@ -6,8 +6,7 @@ import WaTabs from "./WaTabs";
 import LoggerSettings from "./LoggerSettings";
 
 const defaultConfig = {
-    forms: [],
-    options: {},
+    logForms: [],
 };
 
 export default function WaCF7Panel() {
@@ -21,7 +20,6 @@ export default function WaCF7Panel() {
         initialConfig.current = defaultConfig;
     }
     const [config, setConfig] = useState(initialConfig.current);
-
     const [status, setStatus] = useState({ status: "normal" });
 
     const onChangeHandler = (newConfig) => {
@@ -63,7 +61,10 @@ export default function WaCF7Panel() {
                 {{
                     "Визуальные настройки": "HTML-справка",
                     "CSV-логирование сообщений": (
-                        <LoggerSettings config={config} onChange={(newConfig) => setConfig(newConfig)} />
+                        <LoggerSettings
+                            config={config.logForms}
+                            onChange={(newConfig) => setConfig({ ...config, logForms: newConfig })}
+                        />
                     ),
                 }}
             </WaTabs>

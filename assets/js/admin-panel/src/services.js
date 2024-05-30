@@ -125,6 +125,9 @@ export const Base64 = {
 
 export function dashIconByType(type) {
     switch (type) {
+        case "cross":
+            type = "dashicons-no-alt";
+            break;
         case "settings":
             type = "dashicons-admin-generic";
             break;

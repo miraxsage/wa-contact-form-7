@@ -38,8 +38,17 @@ add_action('admin_enqueue_scripts', function($hook){
                       false,
                       ["in_footer" => true]);
     $config = get_option("wacf7-config");
+    $cf7Forms = get_posts( array('post_type' => 'wpcf7_contact_form', 'posts_per_page' => -1) );
+    $cf7FormsIds = [];
+    foreach($cf7Forms as $form){
+        $cf7FormsIds[] = (object)["id" => $form->ID, "title" => $form->post_title];
+    }
+
+
+
     wp_add_inline_script('wacf7-plugin', 
         'wacf7PluginUri = "'.WACF7_PLUGIN_URI.'";
+        wacf7Forms = JSON.parse(`'.json_encode($cf7FormsIds).'`);
         wacf7Config = '.($config ? '`'.$config.'`' : "null").';', 
         'before');
 });
