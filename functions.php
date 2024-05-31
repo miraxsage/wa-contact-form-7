@@ -28,6 +28,15 @@ function wacf7_admin_menu_page(){
     <?php
 }
 
+// add_action("wpcf7_init", function() {
+//      $posts = WPCF7_ContactForm::find();
+//      foreach ( $posts as $post ){
+//          var_dump($post->scan_form_tags());
+//          break;
+//      }
+// }, 20);
+
+
 add_action('admin_enqueue_scripts', function($hook){
     if (strpos($hook, 'wacf7_admin_menu') === false)
         return;
@@ -38,17 +47,19 @@ add_action('admin_enqueue_scripts', function($hook){
                       false,
                       ["in_footer" => true]);
     $config = get_option("wacf7-config");
-    $cf7Forms = get_posts( array('post_type' => 'wpcf7_contact_form', 'posts_per_page' => -1) );
-    $cf7FormsIds = [];
-    foreach($cf7Forms as $form){
-        $cf7FormsIds[] = (object)["id" => $form->ID, "title" => $form->post_title];
+
+    $cf7FormsConfigs = [];
+    $cf7Forms = WPCF7_ContactForm::find();
+    foreach ( $cf7Forms as $form ){
+        $tags = [];
+        foreach($form->scan_form_tags() as $tag)
+            $tags[] = ["raw_name" => $tag->raw_name, "name" => $tag->name, "type" => $tag->basetype];
+        $cf7FormsConfigs[] = ["id" => $form->id(), "title" => $form->title(), "tags" => $tags];
     }
-
-
 
     wp_add_inline_script('wacf7-plugin', 
         'wacf7PluginUri = "'.WACF7_PLUGIN_URI.'";
-        wacf7Forms = JSON.parse(`'.json_encode($cf7FormsIds).'`);
+        wacf7Forms = JSON.parse(`'.json_encode($cf7FormsConfigs).'`);
         wacf7Config = '.($config ? '`'.$config.'`' : "null").';', 
         'before');
 });

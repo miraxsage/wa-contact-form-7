@@ -1,4 +1,5 @@
 import classes from "classnames";
+import { useMemo } from "react";
 import Container from "../Container";
 import WaAutoComplete from "../WaAutocomplete";
 import WaInfo from "../WaInfo";
@@ -14,13 +15,35 @@ const standartFields = [
         name: "IP адрес",
         iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
     },
+    {
+        id: "ip_address1",
+        name: "IP адрес1",
+        iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
+    },
+    {
+        id: "ip_address2",
+        name: "IP адрес2",
+        iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
+    },
 ];
 
-function getFormTitle(formId) {
-    if (typeof wacf7Forms == "undefined") return "Форма #" + formId;
+function getForm(formId) {
+    if (typeof wacf7Forms == "undefined") return null;
     const form = wacf7Forms.find((f) => f.id == formId);
+    if (!form) return null;
+    return form;
+}
+
+function getFormTitle(formId) {
+    const form = getForm(formId);
     if (!form) return "Форма #" + formId;
     return `Форма "${form.title}"`;
+}
+
+function getFormTags(formId) {
+    const form = getForm(formId);
+    if (!form) return [];
+    return form.tags;
 }
 
 export default function FormLoggerSettings({
@@ -38,13 +61,28 @@ export default function FormLoggerSettings({
             id: f.id,
             name: f.title,
         }));
-    const fieldsVariants = [
-        ...standartFields,
-        { id: "1", name: "your_name", iconClass: "dashicons dashicons-editor-textcolor" },
-        { id: "2", name: "your_email", iconClass: "dashicons dashicons-editor-textcolor" },
-        { id: "3", name: "your_answer", iconClass: "dashicons dashicons-editor-textcolor" },
-    ];
-    fieldsVariants.forEach((f) => (f.iconClass = classes(f.iconClass, "icon-size-16 fix-logger-acmp-icon")));
+
+    const fieldsVariants = useMemo(() => {
+        const variants = [
+            ...standartFields,
+            ...getFormTags(id)
+                .filter((t) => t.raw_name && t.name)
+                .map((t) => ({
+                    id: t.raw_name,
+                    name: t.name,
+                    iconClass: "dashicons dashicons-editor-textcolor",
+                })),
+        ];
+        variants.forEach(
+            (f) =>
+                (f.iconClass = classes(f.iconClass, {
+                    "icon-size-16": !f.iconClass.includes("icon-size-16"),
+                    "fix-logger-acmp-icon": !f.iconClass.includes("fix-logger-acmp-icon"),
+                })),
+        );
+        return variants;
+    }, [id]);
+
     return (
         <Container
             className={className}
