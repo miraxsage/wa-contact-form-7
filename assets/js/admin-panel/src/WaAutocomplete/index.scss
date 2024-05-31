@@ -85,8 +85,24 @@
     padding: 4px 5px 6px 7px;
     transition: all 0.3s;
     cursor: default;
+    position: relative;
     &:not(.none) {
         cursor: pointer;
+    }
+    &.focused {
+        &:before {
+            content: "";
+            background: #eaf5ff;
+            border: 1px solid #a9c4db;
+            display: block;
+            position: absolute;
+            border-radius: 5px;
+            inset: 4px;
+        }
+        &.active::before {
+            background: #4290cf;
+            border: 1px solid #73b0e4;
+        }
     }
 }
 .wa-autocomplete-suggestions .wa-suggestion-item.active {
@@ -126,6 +142,7 @@
 .wa-autocomplete-suggestions .wa-suggestion-item-title {
     display: flex;
     align-items: center;
+    position: relative;
     gap: 5px;
 }
 .wa-autocomplete-suggestions .wa-suggestion-item-title-bold {

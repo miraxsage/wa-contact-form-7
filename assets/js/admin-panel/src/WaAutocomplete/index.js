@@ -27,13 +27,14 @@ export default function WaAutocomplete({
     const [id] = useState("wa-autocomplete-" + generateId());
     const lastClickTargetRef = useRef();
     const renderedDataRef = useRef();
-    const previousInputVal = useRef();
+    const previousInputValRef = useRef();
+    const useSilentBlurRef = useRef(false);
     const optionalDataRef = useRef([]);
 
     const [selectedIds, setSelectedIds] = useState(() => initialData.filter((d) => d.defaultSelected).map((d) => d.id));
     optionalDataRef.current = optionalDataRef.current.filter((d) => selectedIds.find((id) => d.id == id));
 
-    const data = [...initialData, ...(allowNotPresent ? optionalDataRef.current : [])];
+    let data = [...initialData, ...(allowNotPresent ? optionalDataRef.current : [])];
 
     useEffect(() => {
         renderedDataRef.current = JSON.stringify(data);
@@ -42,17 +43,18 @@ export default function WaAutocomplete({
         return () => document.removeEventListener("mousedown", determLastClickTarget);
     });
 
-    const [suggestions, setSuggestions] = useState(data);
-    const [areSuggsShown, setAreSuggsShown] = useState(false);
-    const [inputVal, setInputValState] = useState(() =>
+    let [inputVal, setInputValState] = useState(() =>
         multiple ? "" : data.find((d) => d.defaultSelected)?.name ?? "",
     );
     const setInputVal = (newVal, prevVal) => {
-        previousInputVal.current = prevVal === undefined ? inputVal : prevVal;
+        previousInputValRef.current = prevVal === undefined ? inputVal : prevVal;
         setInputValState(newVal);
     };
+    const [areSuggsShown, setAreSuggsShown] = useState(false);
+    const suggestions = data.filter((d) => !inputVal || d.name.toLowerCase().includes(inputVal.toLowerCase()));
     const [invalid, setInvalid] = useState(false);
     const [inputHeight, setInputHeight] = useState();
+    const [itemsFocusIndex, setItemsFocusIndex] = useState(-1);
     const [, rerender] = useState();
 
     let selectedVal = null;
@@ -61,114 +63,122 @@ export default function WaAutocomplete({
     if (rootRef.current)
         inputWidth = getTextWidth(inputVal ? inputVal : pholder, rootRef.current.querySelector("input")) + 22 + "px";
 
-    const suggsVisibility = (show) => {
-        if (!show && inputVal) {
-            let newData = data;
-            let inputItem = newData.find((d) => d.name == inputVal);
-            if (!multiple && selectedIds.length > 0 && selectedIds[0] == inputItem.id) inputItem = null;
-            setAreSuggsShown(false);
-            if (!inputItem && allowNotPresent && multiple) {
-                if (optionalDataRef.current.find((d) => d.name == inputVal)) inputItem = null;
-                else {
-                    inputItem = { id: generateId(), name: inputVal };
-                    optionalDataRef.current.push(inputItem);
-                    newData = [...initialData, ...optionalDataRef.current];
+    const commitInput = ({ closeSuggs, considerFocusedItem } = {}) => {
+        if (itemsFocusIndex >= 0 && considerFocusedItem) selectIds(suggestions[itemsFocusIndex].id);
+        else {
+            let inputItem = data.find((d) => d.name == inputVal);
+
+            let alreadySelectedItem = false;
+            if (inputItem && selectedIds.includes(inputItem.id)) {
+                inputItem = null;
+                alreadySelectedItem = true;
+            }
+
+            if (!inputItem && inputVal) {
+                if (allowNotPresent) {
+                    if (alreadySelectedItem || optionalDataRef.current.find((d) => d.name == inputVal))
+                        inputItem = null;
+                    else {
+                        inputItem = { id: generateId(), name: inputVal };
+                        optionalDataRef.current.push(inputItem);
+                        data = [...initialData, ...optionalDataRef.current];
+                    }
+                    if (multiple) setInputVal("");
                 }
-                setInputVal("");
             }
-            const newInputVal = multiple ? (inputItem ? "" : inputVal) : inputVal;
-            if (newInputVal) setInputVal(newInputVal);
-            setInvalid(inputItem === undefined && !allowNotPresent);
-            if (inputItem) {
-                const newSelectedIds = [...selectedIds, inputItem.id];
-                setSelectedIds(newSelectedIds);
-                if (onSelected)
-                    onSelected(
-                        multiple
-                            ? newData.filter((d) => newSelectedIds.includes(d.id))
-                            : newData.find((d) => d.id == inputItem.id),
-                    );
-            }
-        } else if (areSuggsShown != show) {
-            setAreSuggsShown(show);
-            setInvalid(false);
+            const newInputVal = multiple ? (inputItem || alreadySelectedItem ? "" : inputVal) : inputVal;
+            setInputVal(newInputVal);
+            setInvalid(inputVal && inputItem === undefined && !allowNotPresent);
+            if (inputItem) selectIds(multiple ? [...selectedIds, inputItem.id] : inputItem.id);
         }
+        if (typeof closeSuggs == "boolean") setAreSuggsShown(!closeSuggs);
     };
     const onChangeNative = (e) => {
-        let val = typeof e == "string" ? e : e?.target?.value;
-        val = val ?? "";
-        let newSelectedId = multiple ? undefined : data.filter((d) => val && d.name == val);
-        if (newSelectedId)
-            if (newSelectedId.length > 0) newSelectedId = newSelectedId[0].id;
-            else newSelectedId = null;
-        if (
-            newSelectedId
-                ? selectedIds.length > 0 && selectedIds[0] == newSelectedId
-                : newSelectedId === null
-                  ? (!allowNotPresent ? true : !val && !previousInputVal.current) && selectedIds.length == 0
-                  : undefined
-        )
-            newSelectedId = undefined;
-        setAreSuggsShown(true);
-        setInputVal(val, !val && allowNotPresent ? "" : undefined);
-        setSuggestions(
-            !val || (!multiple && data.find((d) => d.name == val))
-                ? data
-                : data.filter((d) => d.name.startsWith(e.target.value)),
-        );
-        if (newSelectedId) setSelectedIds([newSelectedId]);
-        if (newSelectedId === null) setSelectedIds([]);
-        if (onChange && val != inputVal) onChange(val);
-        if (!multiple && onSelected && newSelectedId !== undefined) {
-            const selectedItem = newSelectedId
-                ? data.find((d) => d.id == newSelectedId)
-                : val && allowNotPresent
-                  ? { id: "newItem", name: val }
-                  : null;
-            onSelected(selectedItem);
+        const val = (typeof e == "string" ? e : e?.target?.value) ?? "";
+        if (val == inputVal) return;
+        if (!multiple) {
+            let newSelectedItem = data.filter((d) => val && d.name == val);
+            newSelectedItem = newSelectedItem.length > 0 ? newSelectedItem[0].id : null;
+            selectIds(newSelectedItem ?? []);
         }
+        setInputVal(val);
+        if (onChange) onChange(val);
     };
+
     const refocusInput = (focus = true) =>
         setTimeout(() => rootRef.current?.querySelector("input")[focus ? "focus" : "blur"]());
-    const onSelectedNative = (id) => {
-        if (id == "none") return;
+
+    const itemsByIds = (ids) => {
+        if (Array.isArray(ids)) return data.filter((d) => ids.includes(d.id));
+        return data.find((d) => ids && d.id == ids);
+    };
+
+    const blurInput = () => {
+        lastClickTargetRef.current = null;
+        rootRef.current.querySelector("input").blur();
+    };
+
+    const blurInputSilently = () => {
+        useSilentBlurRef.current = true;
+        blurInput();
+    };
+
+    const selectIds = (ids) => {
+        if (!ids || ids == "none") return;
+
+        if (Array.isArray(ids)) {
+            if (multiple || ids.length == 0) {
+                if (ids.toString() == selectedIds.toString()) return;
+                setSelectedIds(ids);
+                setInputVal("");
+                if (onSelected) onSelected(!multiple && ids.length == 0 ? null : itemsByIds(ids));
+                return;
+            } else ids = ids[0];
+        }
+
+        const id = ids;
+
         const selectedItem = data.find((d) => d.id == id);
         const isDeselect = multiple && selectedIds.includes(id);
-        const saveFocus = multiple && areSuggsShown;
         const newSelectedIds = multiple
             ? isDeselect
                 ? selectedIds.filter((s) => s != id)
                 : [...selectedIds, id]
             : [id];
+        if (newSelectedIds.toString() == selectedIds.toString()) return;
         setSelectedIds(newSelectedIds);
         setInputVal(multiple ? "" : selectedItem.name);
-        let newSuggestions = data;
-        const optionalItem = optionalDataRef.current.find((d) => id == d.id);
-        if (allowNotPresent && optionalItem && isDeselect)
-            newSuggestions = [...initialData, ...optionalDataRef.current.filter((d) => id != d.id)];
-        setSuggestions(newSuggestions);
-        setAreSuggsShown(saveFocus);
-        refocusInput(saveFocus);
-        if (onSelected)
-            onSelected(multiple ? data.filter((d) => newSelectedIds.includes(d.id)) : data.find((d) => d.id == id));
+        if (onSelected) onSelected(itemsByIds(multiple ? newSelectedIds : id));
     };
+
     useEffect(() => {
         if (!rootRef.current) {
             rerender();
             return;
         }
+        if (itemsFocusIndex >= 0) {
+            const suggsContainer = rootRef.current.querySelector(".wa-autocomplete-suggestions");
+            const targetSugg = suggsContainer.querySelector(
+                ".wa-suggestion-item:nth-child(" + (itemsFocusIndex + 1) + ")",
+            );
+            const suggMinScrollPos = Math.max(
+                0,
+                targetSugg.offsetTop + targetSugg.clientHeight - suggsContainer.clientHeight,
+            );
+            const suggMaxScrollPos = targetSugg.offsetTop;
+            if (suggsContainer.scrollTop < suggMinScrollPos) suggsContainer.scrollTop = suggMinScrollPos;
+            else if (suggsContainer.scrollTop > suggMaxScrollPos) suggsContainer.scrollTop = suggMaxScrollPos;
+        }
         const newRenderedData = JSON.stringify(data);
         if (selectedIds.some((id) => data.every((d) => d.id != id))) {
-            setSelectedIds([]);
+            setSelectedIds(selectedIds.filter((id) => data.some((d) => d.id == id)));
             setInputVal("");
-            setSuggestions(data);
             setInvalid(false);
             renderedDataRef.current = newRenderedData;
             return;
         }
         if (renderedDataRef.current != newRenderedData) {
-            let newSuggestions = data,
-                newInputVal = inputVal,
+            let newInputVal = inputVal,
                 newInvalid = invalid,
                 newSelectedIds = selectedIds;
             if (inputVal) {
@@ -178,9 +188,7 @@ export default function WaAutocomplete({
                       ? data.find((d) => d.id == selectedIds[0])
                       : data.find((d) => d.name == inputVal);
                 if (multiple) {
-                    if (!inputItem) {
-                        newSuggestions = data.filter((d) => d.name == inputVal);
-                    } else {
+                    if (inputItem) {
                         if (!rootRef.current.querySelector("input").matches(":focus")) {
                             newInputVal = "";
                             if (!newSelectedIds.includes(inputItem.id))
@@ -198,7 +206,6 @@ export default function WaAutocomplete({
                     }
                 }
             }
-            setSuggestions(newSuggestions);
             setSelectedIds(newSelectedIds);
             setInputVal(newInputVal);
             setInvalid(newInvalid);
@@ -233,10 +240,7 @@ export default function WaAutocomplete({
                               <span className={classes("wa-autocomplete-tag")} key={item.name}>
                                   {item.iconClass && <span className={item.iconClass}></span>}
                                   {item.name}
-                                  <span
-                                      className="dashicons dashicons-plus-alt2"
-                                      onClick={() => onSelectedNative(id)}
-                                  ></span>
+                                  <span className="dashicons dashicons-plus-alt2" onClick={() => selectIds(id)}></span>
                               </span>
                           );
                       })
@@ -248,35 +252,67 @@ export default function WaAutocomplete({
                     style={{ minWidth, width: inputWidth }}
                     onChange={onChangeNative}
                     onFocus={(e) => {
-                        if (!e.target.value) onChangeNative();
-                        else suggsVisibility(true);
+                        setAreSuggsShown(true);
+                        setInvalid(false);
                     }}
                     onBlur={(e) => {
-                        if (!lastClickTargetRef.current?.closest("#" + id)) suggsVisibility(false);
+                        if (!lastClickTargetRef.current?.closest("#" + id)) {
+                            setItemsFocusIndex(-1);
+                            if (useSilentBlurRef.current) {
+                                useSilentBlurRef.current = false;
+                                return;
+                            }
+                            commitInput({ closeSuggs: true });
+                        } else refocusInput();
                     }}
                     onKeyDown={(e) => {
+                        if (e.code == "Tab") {
+                            lastClickTargetRef.current = null;
+                        }
                         if (e.code == "Escape") e.preventDefault();
+                        let newFocusIndex = null;
+                        if (e.code == "ArrowDown")
+                            newFocusIndex =
+                                itemsFocusIndex < 0
+                                    ? 0
+                                    : itemsFocusIndex == suggestions.length - 1
+                                      ? -1
+                                      : itemsFocusIndex + 1;
+                        if (e.code == "ArrowUp")
+                            newFocusIndex =
+                                itemsFocusIndex < 0
+                                    ? suggestions.length - 1
+                                    : itemsFocusIndex == 0
+                                      ? -1
+                                      : itemsFocusIndex - 1;
+                        if (newFocusIndex !== null) setItemsFocusIndex(newFocusIndex);
+                        else if (!e.code.match("Escape|Enter|ArrowUp|ArrowDown|Tab")) setItemsFocusIndex(-1);
                     }}
                     onKeyUp={(e) => {
-                        if (e.code == "Escape" || e.code == "Enter") {
-                            lastClickTargetRef.current = null;
-                            e.target.blur();
-                            if (e.code == "Enter" && allowNotPresent && multiple) refocusInput();
+                        if (e.code == "Tab") return;
+                        if (e.code.match("Escape|Enter|Tab")) {
+                            if (e.code.match("Escape|Tab")) {
+                                if (itemsFocusIndex >= 0) setItemsFocusIndex(-1);
+                                else blurInput();
+                            } else {
+                                if (!multiple) {
+                                    commitInput({ closeSuggs: true, considerFocusedItem: true });
+                                    blurInputSilently();
+                                } else commitInput({ considerFocusedItem: true });
+                            }
                         }
-                        if (e.code == "Backspace" && !previousInputVal.current) {
-                            const lastId = selectedIds.at(-1);
-                            const newSelectedIds = selectedIds.slice(0, -1);
-                            setSelectedIds(newSelectedIds);
-                            const newOptionalData = optionalDataRef.current.filter((d) => d.id != lastId);
-                            if (allowNotPresent && optionalDataRef.current.length != newOptionalData.length)
-                                setSuggestions([...initialData, ...newOptionalData]);
-                        }
-                        if (!inputVal && previousInputVal.current) previousInputVal.current = inputVal;
+                        if (e.code == "Backspace" && !previousInputValRef.current) selectIds(selectedIds.slice(0, -1));
+                        if (!inputVal && previousInputValRef.current) previousInputValRef.current = inputVal;
                     }}
                 />
                 <div
                     className="input-empty-tail"
-                    onClick={() => rootRef.current?.querySelector("input")?.focus()}
+                    onClick={() => {
+                        let input = rootRef.current?.querySelector("input");
+                        if (!input) return;
+                        input.focus();
+                        input.selectionStart = input.selectionEnd = input.value.length;
+                    }}
                 ></div>
             </div>
             <div
@@ -295,14 +331,21 @@ export default function WaAutocomplete({
                               iconClass: "dashicons dashicons-info-outline icon-size-16",
                           },
                       ]
-                ).map((sugg) => (
+                ).map((sugg, i) => (
                     <div
-                        onClick={() => onSelectedNative(sugg.id)}
+                        onClick={() => {
+                            selectIds(sugg.id);
+                            if (!multiple) {
+                                setAreSuggsShown(false);
+                                blurInputSilently();
+                            }
+                        }}
                         onMouseDown={(e) => e.preventDefault()}
                         key={sugg.id}
                         className={classes("wa-suggestion-item", {
                             active: selectedIds.includes(sugg.id),
                             none: sugg.id == "none",
+                            focused: i == itemsFocusIndex,
                         })}
                     >
                         <div
