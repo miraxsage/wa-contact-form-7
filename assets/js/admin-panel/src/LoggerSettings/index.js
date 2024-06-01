@@ -61,7 +61,7 @@ export default function LoggerSettings({ config, onChange }) {
                         <FormLoggerSettings
                             key="newForm"
                             className="form-adding"
-                            config={{ id: "newForm" }}
+                            config={{ id: "newForm", tags: [] }}
                             formsToAdd={wacf7Forms.filter((f) => forms.every((ff) => ff.id != f.id))}
                             style={{ marginBottom: forms.length > 0 ? "5px" : "0px" }}
                             onDelete={() => setFormAdding(false)}
@@ -69,17 +69,20 @@ export default function LoggerSettings({ config, onChange }) {
                                 setFormAdding(false);
                                 const newForms = [newFormConfig, ...forms];
                                 updateFormAddingAvailavility(newForms);
-                                onChange(newForms);
+                                if (onChange) onChange(newForms);
                             }}
                         />
                     )}
-                    {forms.map((f, i) => (
+                    {forms.map((form, i) => (
                         <FormLoggerSettings
-                            key={f.id ?? generateId()}
-                            config={f}
+                            key={form.id}
+                            config={form}
                             style={{ marginBottom: i < forms.length - 1 ? "5px" : "0px" }}
+                            onChange={(newForm) => {
+                                if (onChange) onChange(forms.map((f) => (f.id == newForm.id ? newForm : f)));
+                            }}
                             onDelete={() => {
-                                const newForms = forms.filter((ff) => ff.id != f.id);
+                                const newForms = forms.filter((ff) => ff.id != form.id);
                                 updateFormAddingAvailavility(newForms);
                                 onChange(newForms);
                             }}

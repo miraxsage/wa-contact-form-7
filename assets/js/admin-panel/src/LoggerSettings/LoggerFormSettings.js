@@ -6,23 +6,13 @@ import WaInfo from "../WaInfo";
 
 const standartFields = [
     {
-        id: "submit_time",
+        id: "[wacf7_submit_time]",
         name: "Время отправки",
         iconClass: "dashicons dashicons-clock icon-size-16 fix-logger-acmp-icon",
     },
     {
-        id: "ip_address",
+        id: "[wacf7_ip_address]",
         name: "IP адрес",
-        iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
-    },
-    {
-        id: "ip_address1",
-        name: "IP адрес1",
-        iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
-    },
-    {
-        id: "ip_address2",
-        name: "IP адрес2",
         iconClass: "dashicons dashicons-location icon-size-16 fix-logger-acmp-icon",
     },
 ];
@@ -73,13 +63,13 @@ export default function FormLoggerSettings({
                     iconClass: "dashicons dashicons-editor-textcolor",
                 })),
         ];
-        variants.forEach(
-            (f) =>
-                (f.iconClass = classes(f.iconClass, {
-                    "icon-size-16": !f.iconClass.includes("icon-size-16"),
-                    "fix-logger-acmp-icon": !f.iconClass.includes("fix-logger-acmp-icon"),
-                })),
-        );
+        variants.forEach((variant) => {
+            variant.iconClass = classes(variant.iconClass, {
+                "icon-size-16": !variant.iconClass.includes("icon-size-16"),
+                "fix-logger-acmp-icon": !variant.iconClass.includes("fix-logger-acmp-icon"),
+            });
+            if (config.tags.includes(variant.id)) variant.defaultSelected = true;
+        });
         return variants;
     }, [id]);
 
@@ -105,8 +95,8 @@ export default function FormLoggerSettings({
                         multiple={false}
                         inherit={true}
                         data={formsToAddVariants}
-                        onSelected={(v) => {
-                            if (v) onChange({ id: v.id });
+                        onSelected={(form) => {
+                            if (form && onChange) onChange({ id: form.id, tags: [] });
                         }}
                     />
                 </>
@@ -118,7 +108,9 @@ export default function FormLoggerSettings({
                         data={fieldsVariants}
                         multiple={true}
                         allowNotPresent={true}
-                        onSelected={(e) => console.log(e)}
+                        onSelected={(variants) => {
+                            if (onChange) onChange({ ...config, tags: variants.map((v) => v.id) });
+                        }}
                     />
                 </>
             )}

@@ -9,6 +9,8 @@ const defaultConfig = {
     logForms: [],
 };
 
+//defaultConfig: { logForms: { id: string; tags: string[] }[] };
+
 export default function WaCF7Panel() {
     const initialConfig = useRef();
     try {
@@ -63,7 +65,7 @@ export default function WaCF7Panel() {
                     "CSV-логирование сообщений": (
                         <LoggerSettings
                             config={config.logForms}
-                            onChange={(newConfig) => setConfig({ ...config, logForms: newConfig })}
+                            onChange={(newLogForms) => onChangeHandler({ ...config, logForms: newLogForms })}
                         />
                     ),
                 }}
@@ -74,6 +76,7 @@ export default function WaCF7Panel() {
                     className={classes("button button-primary", {
                         "success-button": status.status == "success",
                     })}
+                    disabled={status == "loading"}
                     style={{ width: "100%" }}
                 >
                     {status.status == "loading" && <span className="button-loader">Сохранение...</span>}
