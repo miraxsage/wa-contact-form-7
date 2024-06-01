@@ -13,4 +13,7 @@ define("WACF7_PLUGIN_URI", plugin_dir_url(__FILE__));
 define("WACF7_BUILD_DIR", WACF7_PLUGIN_DIR."assets{$dir_sep}js{$dir_sep}admin-panel{$dir_sep}build{$dir_sep}");
 define("WACF7_BUILD_URI", WACF7_PLUGIN_URI."assets/js/admin-panel/build/");
 
+define("WACF7_LOGS_TB", $GLOBALS['wpdb']->prefix."wacf7_logs");
+define("WACF7_LOGS_FIELDS_TB", $GLOBALS['wpdb']->prefix."wacf7_logs_fields");
+
 require_once WACF7_PLUGIN_DIR . 'functions.php';

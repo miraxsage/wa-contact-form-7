@@ -4,6 +4,26 @@
 
 // });
 
+register_activation_hook(WACF7_PLUGIN_DIR.$dir_sep."index.php", function(){
+    $WACF7_LOGS_TB = WACF7_LOGS_TB;
+    $WACF7_LOGS_FIELDS_TB = WACF7_LOGS_FIELDS_TB;
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    $charset_collate = $GLOBALS['wpdb']->get_charset_collate();
+    dbDelta("CREATE TABLE IF NOT EXISTS $WACF7_LOGS_TB (
+         `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+         `form_id` BIGINT NOT NULL,
+         `form_log_num` BIGINT NOT NULL,
+         `date` BIGINT NOT NULL
+    ) $charset_collate;");
+    dbDelta("CREATE TABLE IF NOT EXISTS $WACF7_LOGS_FIELDS_TB (
+        `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `form_log_id` BIGINT NOT NULL,
+        `form_log_num` BIGINT NOT NULL,
+        `name` TEXT COLLATE utf8_unicode_ci NOT NULL,
+        `value` TEXT COLLATE utf8_unicode_ci NULL
+    ) $charset_collate;");  
+});
+
 /* ADMIN SIDE */
 add_action('admin_menu', 'register_webarch_wpcf7', 1000);
 
@@ -87,4 +107,43 @@ if(wp_doing_ajax()){
         echo '{"success": true}';
         wp_die();
     });
+}
+
+/* LOGGING */
+
+add_action("wpcf7_before_send_mail", "wacf7_before_send_mail_handler", 10, 3);
+
+function wacf7_before_send_mail_handler($sendingForm, &$abort, $submission){
+    $logConfig = get_option("wacf7-config");
+    if(!$logConfig)
+        return;
+    $logConfig = json_decode(base64_decode($logConfig));
+    $formLogConfig = null;
+    foreach($logConfig->logForms as $form){
+        if($form->id == $sendingForm->id()){
+            $formLogConfig = $form;
+            break;
+        }
+    }
+    if(!$formLogConfig)
+        return;
+    global $wpdb;
+    $last_num = $wpdb->get_var("select max(form_log_num) from ".WACF7_LOGS_TB." where form_id = ".$sendingForm->id());
+    $next_num = empty($last_num) && $last_num !== "0" ? 0 : $last_num + 1;
+    $wpdb->insert(WACF7_LOGS_TB, ["form_id" => $sendingForm->id(), "form_log_num" => $next_num, "date" => time()]);
+    $new_log_id = $wpdb->insert_id;
+    if($new_log_id == 0)
+        return;
+    $insertVals = "";
+    foreach($formLogConfig->tags as $logTag){
+        $data = "";
+        if($logTag == "[wacf7_submit_time]")
+            $data = date("d.m.Y H:i:s");
+        else if($logTag == "[wacf7_ip_address]")
+            $data = $_SERVER['REMOTE_ADDR'];
+        else
+            $data = $submission->get_posted_data($logTag);
+        $insertVals .= (empty($insertVals) ? "" : ",")."(".$new_log_id.",".$next_num.",\"".$logTag."\",\"".$data."\")";
+    }
+    $wpdb->query("insert into ".WACF7_LOGS_FIELDS_TB." (form_log_id, form_log_num, name, value) values ".$insertVals);
 }
