@@ -1,0 +1,30 @@
+table.logs-table {
+    border-spacing: 0;
+    & :is(td, th) {
+        border: 1px solid #bbbbbb;
+        border-width: 1px 0px 0px 1px;
+        padding: 2px 5px;
+        vertical-align: top;
+    }
+    & th {
+        background: #f8f8f8;
+    }
+    border: 1px solid #bbbbbb;
+    border-width: 0px 1px 1px 0px;
+}
+.logs-paginator {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    & input {
+        width: 55px;
+        &.invalid {
+            border: 1px solid rgb(153, 5, 5);
+            background-color: rgb(255, 219, 219);
+        }
+    }
+    & span {
+        padding: 0 5px;
+        line-height: 30px;
+    }
+}

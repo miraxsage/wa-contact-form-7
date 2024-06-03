@@ -46,6 +46,7 @@ function register_webarch_wpcf7(){
 function wacf7_admin_menu_page(){
     ?>
     <div id="wacf7-container"></div>
+    <div id="wacf7-modal" style="display:none;"><p></p></div>
     <?php
 }
 
@@ -61,6 +62,9 @@ function wacf7_admin_menu_page(){
 add_action('admin_enqueue_scripts', function($hook){
     if (strpos($hook, 'wacf7_admin_menu') === false)
         return;
+    
+    add_thickbox();
+
     wp_enqueue_style('wacf7-plugin', WACF7_BUILD_URI."index.css");
     wp_enqueue_script('wacf7-plugin', 
                       WACF7_BUILD_URI."index.js", 
@@ -93,6 +97,7 @@ if(!function_exists("return_ajax_error")){
 }
 
 if(wp_doing_ajax()){
+
     add_action('wp_ajax_wacf7', function(){
         $json = file_get_contents('php://input');
         try{
@@ -101,12 +106,78 @@ if(wp_doing_ajax()){
         catch(Exception $exc){
             return return_ajax_error("Некорректные параметры");
         }
+        //$config = valid_config_or_null($config);
         if(!$config)
             return return_ajax_error("Некорректные параметры");
         update_option('wacf7-config', $config ? base64_encode(json_encode($config)) : "");
         echo '{"success": true}';
         wp_die();
     });
+
+    add_action('wp_ajax_wacf7_logs', function(){
+        if(!isset($_GET["form"]) || preg_match("|^\d+$|", $_GET["form"]) !== 1){
+            return return_ajax_error("Некорректные параметры1");
+        } 
+        if(!isset($_GET["page"]) || preg_match("|^\d+$|", $_GET["page"]) !== 1){
+            return return_ajax_error("Некорректные параметры2");
+        } 
+        $form_id = $_GET["form"];
+        $page = intval($_GET["page"]);
+
+        global $wpdb;
+        $wacf7_logs_fields_tb = $wpdb->prefix."wacf7_logs_fields";
+
+        $cols = [];
+        $names = $wpdb->get_results("select distinct name from $wacf7_logs_fields_tb where form_id = $form_id", ARRAY_N);
+        foreach($names as $name)
+            $cols[] = $name[0];
+
+        $empty_vals = [];
+        foreach($cols as $col){
+            $empty_vals[$col] = "";
+        }
+
+        $cf7Form = WPCF7_ContactForm::find("p=".$form_id);
+        if(!empty($cf7Form) && count($cf7Form) > 0){
+            $cf7Form = $cf7Form[0];
+            $form_tags = $cf7Form->scan_form_tags();
+            if(empty($form_tags))
+                $form_tags = [];
+            $form_tags[] = (object)["raw_name" => "[wacf7_submit_time]", "name" => "Время отправки"];
+            $form_tags[] = (object)["raw_name" => "[wacf7_ip_address]", "name" => "IP адрес"];
+            foreach($form_tags as $tag){
+                $colIndex = array_search($tag->raw_name, $cols);
+                if($colIndex !== false)
+                    $cols[$colIndex] = $tag->name;
+            }
+        }
+
+        $result = [[...$cols]];
+        $vals = [];
+        $from_num = ($page - 1) * 20;
+        $to_num = ($page) * 20;
+        $total_pages = ceil(max(20, $wpdb->get_var("select max(form_log_num) from $wacf7_logs_fields_tb where form_id = $form_id")) / 20);
+        $fields = $wpdb->get_results("select * from $wacf7_logs_fields_tb where form_id = $form_id and form_log_num >= "
+                                    .$from_num." and form_log_num < ".$to_num, ARRAY_A);
+
+        $last_num = -1;
+        foreach($fields as $field){
+            if($field["form_log_num"] != $last_num){
+                if($last_num != -1){
+                    $result[] = array_values($vals);
+                }
+                $vals = [...$empty_vals];
+                $last_num = $field["form_log_num"];
+            }
+            $vals[$field["name"]] = $field["value"];
+        }
+        $result[] = array_values($vals);
+
+        echo json_encode(["success" => true, "data" => $result, "totalPages" => $total_pages ]);
+
+        wp_die();
+    });
+
 }
 
 /* LOGGING */

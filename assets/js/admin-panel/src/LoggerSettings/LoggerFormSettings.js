@@ -2,6 +2,7 @@ import classes from "classnames";
 import { useMemo } from "react";
 import Container from "../Container";
 import WaAutoComplete from "../WaAutocomplete";
+import LogsViewer from "../LogsViewer";
 import WaInfo from "../WaInfo";
 
 const standartFields = [
@@ -87,7 +88,18 @@ export default function FormLoggerSettings({
                               "Скачать лог",
                           ],
                           ["trash", onDelete, "Удалить лог и форму"],
-                          ["welcome-view-site", () => {}, "Просмотреть лог"],
+                          [
+                              "welcome-view-site",
+                              () => {
+                                  let modal = document.querySelector("#wacf7-modal p");
+                                  LogsViewer.renderInto(modal, { formId: id, page: 1 });
+                                  tb_show(
+                                      'Содержимое логов формы "' + getFormTitle(id, true) + '"',
+                                      "/?TB_inline&width=800&height=650&inlineId=wacf7-modal",
+                                  );
+                              },
+                              "Просмотреть лог",
+                          ],
                       ]),
             ]}
             style={style}
