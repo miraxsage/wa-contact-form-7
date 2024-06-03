@@ -24,10 +24,10 @@ function getForm(formId) {
     return form;
 }
 
-function getFormTitle(formId) {
+function getFormTitle(formId, rawName = false) {
     const form = getForm(formId);
-    if (!form) return "Форма #" + formId;
-    return `Форма "${form.title}"`;
+    if (!form) return rawName ? formId : "Форма #" + formId;
+    return rawName ? form.title : `Форма "${form.title}"`;
 }
 
 function getFormTags(formId) {
@@ -81,7 +81,11 @@ export default function FormLoggerSettings({
                 ...(id == "newForm"
                     ? [["cross", onDelete, "Отменить создание формы"]]
                     : [
-                          ["download", () => {}, "Скачать лог"],
+                          [
+                              "download",
+                              () => window.open(wacf7PluginUri + "log-file.php?form=" + id, "_blank"),
+                              "Скачать лог",
+                          ],
                           ["trash", onDelete, "Удалить лог и форму"],
                           ["welcome-view-site", () => {}, "Просмотреть лог"],
                       ]),

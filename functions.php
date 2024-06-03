@@ -17,6 +17,7 @@ register_activation_hook(WACF7_PLUGIN_DIR.$dir_sep."index.php", function(){
     ) $charset_collate;");
     dbDelta("CREATE TABLE IF NOT EXISTS $WACF7_LOGS_FIELDS_TB (
         `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `form_id` BIGINT NOT NULL,
         `form_log_id` BIGINT NOT NULL,
         `form_log_num` BIGINT NOT NULL,
         `name` TEXT COLLATE utf8_unicode_ci NOT NULL,
@@ -100,7 +101,6 @@ if(wp_doing_ajax()){
         catch(Exception $exc){
             return return_ajax_error("Некорректные параметры");
         }
-        //$config = valid_config_or_null($config);
         if(!$config)
             return return_ajax_error("Некорректные параметры");
         update_option('wacf7-config', $config ? base64_encode(json_encode($config)) : "");
@@ -128,9 +128,10 @@ function wacf7_before_send_mail_handler($sendingForm, &$abort, $submission){
     if(!$formLogConfig)
         return;
     global $wpdb;
+    $form_id = $sendingForm->id();
     $last_num = $wpdb->get_var("select max(form_log_num) from ".WACF7_LOGS_TB." where form_id = ".$sendingForm->id());
     $next_num = empty($last_num) && $last_num !== "0" ? 0 : $last_num + 1;
-    $wpdb->insert(WACF7_LOGS_TB, ["form_id" => $sendingForm->id(), "form_log_num" => $next_num, "date" => time()]);
+    $wpdb->insert(WACF7_LOGS_TB, ["form_id" => $form_id, "form_log_num" => $next_num, "date" => time()]);
     $new_log_id = $wpdb->insert_id;
     if($new_log_id == 0)
         return;
@@ -142,8 +143,8 @@ function wacf7_before_send_mail_handler($sendingForm, &$abort, $submission){
         else if($logTag == "[wacf7_ip_address]")
             $data = $_SERVER['REMOTE_ADDR'];
         else
-            $data = $submission->get_posted_data($logTag);
-        $insertVals .= (empty($insertVals) ? "" : ",")."(".$new_log_id.",".$next_num.",\"".$logTag."\",\"".$data."\")";
+            $data = str_replace("\"", "\\\"", $submission->get_posted_data($logTag));
+        $insertVals .= (empty($insertVals) ? "" : ",")."(".$form_id.",".$new_log_id.",".$next_num.",\"".$logTag."\",\"".$data."\")";
     }
-    $wpdb->query("insert into ".WACF7_LOGS_FIELDS_TB." (form_log_id, form_log_num, name, value) values ".$insertVals);
+    $wpdb->query("insert into ".WACF7_LOGS_FIELDS_TB." (form_id,form_log_id,form_log_num,name,value) values ".$insertVals);
 }
