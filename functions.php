@@ -5,17 +5,17 @@
 // });
 
 register_activation_hook(WACF7_PLUGIN_DIR.$dir_sep."index.php", function(){
-    $WACF7_LOGS_TB = WACF7_LOGS_TB;
-    $WACF7_LOGS_FIELDS_TB = WACF7_LOGS_FIELDS_TB;
+    $wacf7_logs_tb = WACF7_LOGS_TB;
+    $wacf7_logs_fields_tb = WACF7_LOGS_FIELDS_TB;
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
     $charset_collate = $GLOBALS['wpdb']->get_charset_collate();
-    dbDelta("CREATE TABLE IF NOT EXISTS $WACF7_LOGS_TB (
+    dbDelta("CREATE TABLE IF NOT EXISTS $wacf7_logs_tb (
          `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
          `form_id` BIGINT NOT NULL,
          `form_log_num` BIGINT NOT NULL,
          `date` BIGINT NOT NULL
     ) $charset_collate;");
-    dbDelta("CREATE TABLE IF NOT EXISTS $WACF7_LOGS_FIELDS_TB (
+    dbDelta("CREATE TABLE IF NOT EXISTS $wacf7_logs_fields_tb (
         `id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         `form_id` BIGINT NOT NULL,
         `form_log_id` BIGINT NOT NULL,
@@ -109,7 +109,28 @@ if(wp_doing_ajax()){
         //$config = valid_config_or_null($config);
         if(!$config)
             return return_ajax_error("Некорректные параметры");
+
+        $old_config = json_decode(base64_decode(get_option("wacf7-config"))); 
+        $deleted_forms_condition = "";
+        foreach($old_config->logForms as $old_form){
+            $found = false;
+            foreach($config->logForms as $form){
+                if($form->id == $old_form->id){
+                    $found = true;
+                    break;
+                }
+            }
+            if(!$found)
+                $deleted_forms_condition .= (empty($deleted_forms_condition) ? "" : " or ")."form_id = ".$old_form->id;
+        }
+
+        global $wpdb;
+        $wacf7_logs_tb = WACF7_LOGS_TB;
+        $wacf7_logs_fields_tb = WACF7_LOGS_FIELDS_TB;
+        $wpdb->query("delete from $wacf7_logs_tb where $deleted_forms_condition");
+        $wpdb->query("delete from $wacf7_logs_fields_tb where $deleted_forms_condition");
         update_option('wacf7-config', $config ? base64_encode(json_encode($config)) : "");
+
         echo '{"success": true}';
         wp_die();
     });
@@ -125,7 +146,7 @@ if(wp_doing_ajax()){
         $page = intval($_GET["page"]);
 
         global $wpdb;
-        $wacf7_logs_fields_tb = $wpdb->prefix."wacf7_logs_fields";
+        $wacf7_logs_fields_tb = WACF7_LOGS_FIELDS_TB;
 
         $cols = [];
         $names = $wpdb->get_results("select distinct name from $wacf7_logs_fields_tb where form_id = $form_id", ARRAY_N);
