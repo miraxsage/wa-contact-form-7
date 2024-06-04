@@ -1,0 +1,22 @@
+{
+    "name": "wacf7-admin-panel",
+    "version": "1.0.0",
+    "main": "/src/index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "build": "wp-scripts build",
+        "start": "wp-scripts start"
+    },
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@wordpress/scripts": "^27.1.0",
+        "prettier": "^3.2.5"
+    },
+    "dependencies": {
+        "classnames": "^2.5.1",
+        "react-beautiful-dnd": "^13.1.1",
+        "react-phone-input-2": "^2.15.1"
+    },
+    "description": ""
+}

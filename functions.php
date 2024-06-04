@@ -65,12 +65,13 @@ add_action('admin_enqueue_scripts', function($hook){
     
     add_thickbox();
 
-    wp_enqueue_style('wacf7-plugin', WACF7_BUILD_URI."index.css");
+    wp_enqueue_style('wacf7-plugin', WACF7_ADMIN_BUILD_URI."index.css");
     wp_enqueue_script('wacf7-plugin', 
-                      WACF7_BUILD_URI."index.js", 
-                      (require(WACF7_BUILD_DIR."index.asset.php"))["dependencies"], 
+                      WACF7_ADMIN_BUILD_URI."index.js", 
+                      (require(WACF7_ADMIN_BUILD_DIR."index.asset.php"))["dependencies"], 
                       false,
                       ["in_footer" => true]);
+
     $config = get_option("wacf7-config");
 
     $cf7FormsConfigs = [];
@@ -239,4 +240,55 @@ function wacf7_before_send_mail_handler($sendingForm, &$abort, $submission){
         $insertVals .= (empty($insertVals) ? "" : ",")."(".$form_id.",".$new_log_id.",".$next_num.",\"".$logTag."\",\"".$data."\")";
     }
     $wpdb->query("insert into ".WACF7_LOGS_FIELDS_TB." (form_id,form_log_id,form_log_num,name,value) values ".$insertVals);
+}
+
+/* CUSTOM FIELDS */
+
+function enqueue_wacf7_site_resources($inline_script){
+    wp_enqueue_style('wacf7-site-plugin', WACF7_SITE_BUILD_URI."index.css");
+    wp_enqueue_script('wacf7-site-plugin', WACF7_SITE_BUILD_URI."index.js", 
+                      (require(WACF7_SITE_BUILD_DIR."index.asset.php"))["dependencies"], 
+                      false,
+                      ["in_footer" => true]);
+    wp_add_inline_script('wacf7-site-plugin', $inline_script, 'after');
+}
+
+add_action('wpcf7_init', 'wacf7_register_fields_types');
+
+function wacf7_register_fields_types(){
+    wpcf7_add_form_tag(array('wa_tel'), 'wa_tel_tag_handler', ['name-attr' => true]);
+}
+
+function wa_tel_tag_handler($tag){
+
+    // var_dump($tag);
+    // return;
+
+    $props = [];
+    foreach($tag->options as $opt){
+        if(preg_match("/^top_countries:((?:[a-z]{2})(?:\.[a-z]{2})*)$/i", $opt, $matches) === 1){
+            $countries = [];
+            foreach(explode(".", $matches[1]) as $c)
+                $countries[] = strtolower(trim($c));
+            $props["preferredCountries"] = $countries;
+        } else if(preg_match("/^locale:((?:[a-z]{2})|(?:auto))$/i", $opt, $matches) === 1){
+            $props["locale"] = strtolower($matches[1]);
+        } else if(preg_match("/^country:((?:[a-z]{2})|(?:auto))$/i", $opt, $matches) === 1){
+            if($matches[1] == "auto"){
+                if(preg_match("/^([a-z]{2})/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches) === 1)
+                    $props["country"] = $matches[1];
+                else 
+                    $props["country"] = null;
+            }
+            else $props["country"] = strtolower($matches[1]);
+        }
+    }
+
+    $el_id = uniqid("wa_el_");
+    $inline_code = "const $el_id = document.querySelector('#$el_id');
+    if($el_id)
+        window.useWaPhone($el_id, ".json_encode((object)$props).");";
+    enqueue_wacf7_site_resources($inline_code);
+    return "<div id=\"$el_id\"></div>";
+    
 }

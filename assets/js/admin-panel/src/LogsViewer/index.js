@@ -1,7 +1,6 @@
 import { React, useState, useEffect } from "react";
 import "./index.scss";
 import WaInfo from "../WaInfo";
-import "./index.scss";
 
 function LogsPaginator({ current, total, onChange }) {
     const [currentPage, setCurrentPage] = useState(current);
