@@ -257,6 +257,7 @@ add_action('wpcf7_init', 'wacf7_register_fields_types');
 
 function wacf7_register_fields_types(){
     wpcf7_add_form_tag(array('wa_tel', 'wa_tel*', 'wa_country', 'wa_country*'), 'wa_tel_country_tag_handler', ['name-attr' => true]);
+    wpcf7_add_form_tag(array('wa_pick', 'wa_pick*'), 'wa_pick_tag_handler', ['name-attr' => true]);
 }
 
 function wa_tel_country_tag_handler($tag){
@@ -279,22 +280,57 @@ function wa_tel_country_tag_handler($tag){
             else $props["country"] = strtolower($matches[1]);
         }
     }
-if(str_starts_with($tag->type, "wa_country") && empty($props["country"])){
-    $props["country"] = "ru";
-    if(preg_match("/^([a-z]{2})/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches) === 1)
-        $props["country"] = $matches[1];
-}
+    if(str_starts_with($tag->type, "wa_country") && empty($props["country"])){
+        $props["country"] = "ru";
+        if(preg_match("/^([a-z]{2})/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches) === 1)
+            $props["country"] = $matches[1];
+    }
 
-    $el_id = uniqid("wa_el_");
+    $el_id = uniqid(preg_replace("/[^a-z_]/i", "", $tag->type)."_");
     $inline_code = "const $el_id = document.querySelector('#$el_id');
     if($el_id)
         window.".(str_starts_with($tag->type, "wa_tel") ? "useWaPhone" : "useWaCountry")."($el_id, ".json_encode((object)$props).");";
     enqueue_wacf7_site_resources($inline_code);
     return "<div id=\"$el_id\"></div>";
 }
-add_filter('wpcf7_validate_wa_tel*', 'custom_wa_tel_validation', 20, 2);
 
-function custom_wa_tel_validation($result, $tag){
+function wa_pick_tag_handler($tag){
+    $props = ["name" => $tag->raw_name, "require" => str_ends_with($tag->type, "*")];
+    foreach($tag->options as $opt){
+        if(preg_match("/^multiple(?::(\d+))?$/i", $opt, $matches) === 1){
+            $props["multiple"] = $matches[1] ? intval($matches[1]) : true;
+        }
+    }
+    $variants = [];
+    foreach($tag->values as $val){
+        $parts = explode(";", $val);
+        $variant = [];
+        foreach($parts as $part){
+            if(preg_match("/^https?:\/\//i", $part) === 1){
+                $variant["icon"] = $part;
+                $variant["iconSide"] = array_key_exists("name", $variant) ? "right" : "left";
+            }
+            else{
+                $variant["name"] = $part;
+                $variant["nameHash"] = substr(md5($part), 0, 10);
+            }
+        }
+        $variants[] = $variant;
+    }
+    $props["variants"] = $variants;
+
+    $el_id = uniqid(preg_replace("/[^a-z_]/i", "", $tag->type)."_");
+    $inline_code = "const $el_id = document.querySelector('#$el_id');
+    if($el_id)
+        window.useWaPick($el_id, ".json_encode((object)$props).");";
+    enqueue_wacf7_site_resources($inline_code);
+    return "<div id=\"$el_id\"></div>";
+}
+
+
+add_filter('wpcf7_validate_wa_tel*', 'custom_wa_tel_pick_validation', 20, 2);
+add_filter('wpcf7_validate_wa_pick*', 'custom_wa_tel_pick_validation', 20, 2);
+function custom_wa_tel_pick_validation($result, $tag){
     $tag = new WPCF7_FormTag($tag);
     $val = $_POST[$tag->raw_name];
     if(!isset($val) || strlen($val) < 10)
