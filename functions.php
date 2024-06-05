@@ -256,10 +256,10 @@ function enqueue_wacf7_site_resources($inline_script){
 add_action('wpcf7_init', 'wacf7_register_fields_types');
 
 function wacf7_register_fields_types(){
-    wpcf7_add_form_tag(array('wa_tel', 'wa_tel*'), 'wa_tel_tag_handler', ['name-attr' => true]);
+    wpcf7_add_form_tag(array('wa_tel', 'wa_tel*', 'wa_country', 'wa_country*'), 'wa_tel_country_tag_handler', ['name-attr' => true]);
 }
 
-function wa_tel_tag_handler($tag){
+function wa_tel_country_tag_handler($tag){
     $props = ["name" => $tag->raw_name, "require" => str_ends_with($tag->type, "*")];
     foreach($tag->options as $opt){
         if(preg_match("/^top_countries:((?:[a-z]{2})(?:\.[a-z]{2})*)$/i", $opt, $matches) === 1){
@@ -279,11 +279,16 @@ function wa_tel_tag_handler($tag){
             else $props["country"] = strtolower($matches[1]);
         }
     }
+if(str_starts_with($tag->type, "wa_country") && empty($props["country"])){
+    $props["country"] = "ru";
+    if(preg_match("/^([a-z]{2})/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches) === 1)
+        $props["country"] = $matches[1];
+}
 
     $el_id = uniqid("wa_el_");
     $inline_code = "const $el_id = document.querySelector('#$el_id');
     if($el_id)
-        window.useWaPhone($el_id, ".json_encode((object)$props).");";
+        window.".(str_starts_with($tag->type, "wa_tel") ? "useWaPhone" : "useWaCountry")."($el_id, ".json_encode((object)$props).");";
     enqueue_wacf7_site_resources($inline_code);
     return "<div id=\"$el_id\"></div>";
 }

@@ -1,4 +1,4 @@
-.wa-phone-container {
+:is(.wa-phone-container, .wa-country-container) {
     & .react-tel-input {
         & .country-list .search {
             padding: 0;
