@@ -256,15 +256,11 @@ function enqueue_wacf7_site_resources($inline_script){
 add_action('wpcf7_init', 'wacf7_register_fields_types');
 
 function wacf7_register_fields_types(){
-    wpcf7_add_form_tag(array('wa_tel'), 'wa_tel_tag_handler', ['name-attr' => true]);
+    wpcf7_add_form_tag(array('wa_tel', 'wa_tel*'), 'wa_tel_tag_handler', ['name-attr' => true]);
 }
 
 function wa_tel_tag_handler($tag){
-
-    // var_dump($tag);
-    // return;
-
-    $props = [];
+    $props = ["name" => $tag->raw_name, "require" => str_ends_with($tag->type, "*")];
     foreach($tag->options as $opt){
         if(preg_match("/^top_countries:((?:[a-z]{2})(?:\.[a-z]{2})*)$/i", $opt, $matches) === 1){
             $countries = [];
@@ -290,5 +286,13 @@ function wa_tel_tag_handler($tag){
         window.useWaPhone($el_id, ".json_encode((object)$props).");";
     enqueue_wacf7_site_resources($inline_code);
     return "<div id=\"$el_id\"></div>";
-    
+}
+add_filter('wpcf7_validate_wa_tel*', 'custom_wa_tel_validation', 20, 2);
+
+function custom_wa_tel_validation($result, $tag){
+    $tag = new WPCF7_FormTag($tag);
+    $val = $_POST[$tag->raw_name];
+    if(!isset($val) || strlen($val) < 10)
+        $result->invalidate($tag, "Please fill out this field.");
+    return $result;
 }
