@@ -1,5 +1,6 @@
 import { React, useState, useEffect, useRef } from "react";
 import "./index.scss";
+import classes from "classnames";
 
 function Icon({ src }) {
     return <img src={src} alt="" />;
@@ -21,23 +22,41 @@ export default function WaPick({ name, require, variants, multiple = 1, ...props
         else setCheckedVariants(currentVariants.filter((h) => h != hash));
         setError(undefined);
     };
+    const formValue =
+        checkedVariants.length == 0
+            ? ""
+            : checkedVariants.map((hash) => variants.find(({ nameHash }) => nameHash == hash).name).join(", ");
     useEffect(() => {
         const form = rootRef.current?.closest("form");
         const action = form.getAttribute("action");
-        document.addEventListener("wpcf7invalid", function (event) {
-            if (!action.includes(event.detail.apiResponse.into)) return;
-            for (let invalid of event.detail.apiResponse.invalid_fields) {
-                if (invalid.field == name) {
-                    setError(invalid.message);
-                    break;
+        const abort = new AbortController();
+        document.addEventListener(
+            "wpcf7invalid",
+            function (event) {
+                if (!action.includes(event.detail.apiResponse.into)) return;
+                for (let invalid of event.detail.apiResponse.invalid_fields) {
+                    if (invalid.field == name) {
+                        setError(invalid.message);
+                        break;
+                    }
                 }
-            }
-        });
+            },
+            { signal: abort.signal },
+        );
+        document.addEventListener(
+            "wpcf7mailsent",
+            function (event) {
+                if (!action.includes(event.detail.apiResponse.into)) return;
+                setCheckedVariants([]);
+            },
+            { signal: abort.signal },
+        );
+        return () => abort.abort();
     }, []);
     return (
         <>
-            <div ref={rootRef} className="wa-pick-container">
-                <input type="hidden" name={name} value={checkedVariants.join(";")} />
+            <div ref={rootRef} className={classes("wa-pick-container", { invalid: !!error })}>
+                <input type="hidden" name={name} value={formValue} />
                 {variants.map(({ name, nameHash, icon, iconSide }) => {
                     return (
                         <>

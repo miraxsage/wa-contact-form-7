@@ -5,6 +5,9 @@
     border: 1px solid #cacaca;
     overflow: hidden;
     width: fit-content;
+    &.invalid {
+        border: 1px solid #f44336;
+    }
     & input:checked + label {
         background: #007574;
         border-radius: 5px;

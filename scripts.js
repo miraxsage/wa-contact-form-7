@@ -5,7 +5,14 @@ const copyConfig = {
     // if there is (at [only] block) at least one item from some directory
     // that at the same time is not present in [except] then other ones from
     // this dir not pointed in [only] are ignored
-    only: ["assets", "assets\\js\\admin-panel\\build", "functions.php", "index.php"],
+    only: [
+        "assets",
+        "assets\\js\\admin-panel\\build",
+        "assets\\js\\site-content\\build",
+        "functions.php",
+        "index.php",
+        "log-file.php",
+    ],
     except: [],
 };
 
@@ -19,10 +26,8 @@ function makeDirRecursively(dir) {
 function intendMark(intends, lastItem = false) {
     if (intends.length == 0) return "";
     return (
-        intends.reduce(
-            (prev, cur, i) => prev + (i == intends.length - 1 ? "" : cur ? "|   " : "    "),
-            ""
-        ) + (lastItem ? "`-- " : "|-- ")
+        intends.reduce((prev, cur, i) => prev + (i == intends.length - 1 ? "" : cur ? "|   " : "    "), "") +
+        (lastItem ? "`-- " : "|-- ")
     );
 }
 
@@ -85,7 +90,13 @@ if (process.argv.includes("--rebuild")) {
     );
     child.stdout.pipe(process.stdout);
     child.on("exit", function () {
-        if (process.argv.includes("--release")) release();
-        process.exit();
+        const child = require("child_process").exec(
+            'npm --prefix "' + path.resolve(__dirname, "assets\\js\\site-content") + '" run build'
+        );
+        child.stdout.pipe(process.stdout);
+        child.on("exit", function () {
+            if (process.argv.includes("--release")) release();
+            process.exit();
+        });
     });
 } else if (process.argv.includes("--release")) release();

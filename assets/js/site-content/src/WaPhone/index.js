@@ -24,8 +24,9 @@ export function combineLocalesSources(localeACode, localeBCode) {
 }
 
 export default function WaPhone({ name, require, locale: localeCode, country, ...props }) {
-    const [phone, setPhone] = useState("");
+    const [phone, setPhone] = useState();
     const [error, setError] = useState();
+    const countryCodeRef = useRef();
     const [showUnvalid, setShowUnvalid] = useState(false);
     const [isValid, setIsValid] = useState(false);
     const rootRef = useRef();
@@ -40,21 +41,46 @@ export default function WaPhone({ name, require, locale: localeCode, country, ..
     }, localeCode);
     if (typeof country != "string" || !country) country = undefined;
     useEffect(() => {
+        setPhone("");
         const form = rootRef.current?.closest("form");
         const action = form.getAttribute("action");
-        document.addEventListener("wpcf7invalid", function (event) {
-            if (!action.includes(event.detail.apiResponse.into)) return;
-            for (let invalid of event.detail.apiResponse.invalid_fields) {
-                if (invalid.field == name) {
-                    setError(invalid.message);
-                    break;
+        const abort = new AbortController();
+        document.addEventListener(
+            "wpcf7invalid",
+            function (event) {
+                if (!action.includes(event.detail.apiResponse.into)) return;
+                for (let invalid of event.detail.apiResponse.invalid_fields) {
+                    if (invalid.field == name) {
+                        setError(invalid.message);
+                        break;
+                    }
                 }
-            }
-        });
+            },
+            { signal: abort.signal },
+        );
+        document.addEventListener(
+            "wpcf7mailsent",
+            function (event) {
+                if (!action.includes(event.detail.apiResponse.into)) return;
+                setPhone(countryCodeRef.current);
+                setIsValid(false);
+                setShowUnvalid(false);
+            },
+            { signal: abort.signal },
+        );
+        return () => abort.abort();
     }, []);
     return (
         <div className="wa-phone-container" ref={rootRef}>
-            <input type="hidden" name={name} value={isValid ? phone : ""} />
+            <input
+                type="hidden"
+                name={name}
+                value={
+                    isValid && !error && rootRef.current
+                        ? rootRef.current.querySelector("input.form-control").value
+                        : ""
+                }
+            />
             <PhoneInput
                 enableSearch={true}
                 value={phone}
@@ -62,8 +88,9 @@ export default function WaPhone({ name, require, locale: localeCode, country, ..
                     const targetDigits = Math.min(15, (country.format.match(/\./g) || []).length);
                     const newIsValid = value.length == targetDigits;
                     setIsValid(newIsValid);
+                    countryCodeRef.current = country.dialCode;
                     if (newIsValid) setError(undefined);
-                    return showUnvalid && require ? newIsValid : true;
+                    return error || (showUnvalid && require) ? newIsValid : true;
                 }}
                 countryCodeEditable={false}
                 onChange={(phone) => {

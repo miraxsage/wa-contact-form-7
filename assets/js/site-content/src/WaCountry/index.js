@@ -45,7 +45,7 @@ export default function WaCountry({ name, require, locale: localeCode, country: 
     }, []);
     return (
         <div className="wa-country-container" ref={rootRef}>
-            <input type="hidden" name={name} value={country} />
+            <input type="hidden" name={name} value={localization[country]} />
             <PhoneInput
                 enableSearch={true}
                 onChange={(val, { countryCode }) => {

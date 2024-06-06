@@ -333,7 +333,7 @@ add_filter('wpcf7_validate_wa_pick*', 'custom_wa_tel_pick_validation', 20, 2);
 function custom_wa_tel_pick_validation($result, $tag){
     $tag = new WPCF7_FormTag($tag);
     $val = $_POST[$tag->raw_name];
-    if(!isset($val) || strlen($val) < 10)
+    if(!isset($val) || empty($val))
         $result->invalidate($tag, "Please fill out this field.");
     return $result;
 }
