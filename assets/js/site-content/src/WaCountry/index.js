@@ -32,6 +32,16 @@ export default function WaCountry({ name, require, locale: localeCode, country: 
         if (input) {
             countryNameBlock = document.createElement("div");
             countryNameBlock.classList.add("form-control");
+            countryNameBlock.addEventListener("mousedown", () => {
+                countryNameBlock.setAttribute(
+                    "data-allow-opening",
+                    !!rootRef.current.querySelector(".country-list") ? false : true,
+                );
+            });
+            countryNameBlock.addEventListener("click", () => {
+                if (countryNameBlock.getAttribute("data-allow-opening") == "true")
+                    rootRef.current.querySelector(".flag-dropdown .selected-flag").click();
+            });
         } else countryNameBlock = rootRef.current.querySelector("div.form-control");
         const newHtml = country ? localization[country] : "";
         if (countryNameBlock.innerHTML != newHtml) countryNameBlock.innerHTML = newHtml;
@@ -44,7 +54,7 @@ export default function WaCountry({ name, require, locale: localeCode, country: 
         return () => observer.disconnect();
     }, []);
     return (
-        <div className="wa-country-container" ref={rootRef}>
+        <div className="wa-cf7-country-container" ref={rootRef}>
             <input type="hidden" name={name} value={localization[country]} />
             <PhoneInput
                 enableSearch={true}

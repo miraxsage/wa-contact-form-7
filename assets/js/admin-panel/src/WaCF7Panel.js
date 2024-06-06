@@ -1,5 +1,5 @@
 import Container from "./Container";
-import { useState, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import classes from "classnames";
 import { Base64 } from "./services";
 import WaTabs from "./WaTabs";
@@ -13,6 +13,7 @@ const defaultConfig = {
 
 export default function WaCF7Panel() {
     const initialConfig = useRef();
+    const notSavedRef = useRef(false);
     try {
         if (!initialConfig.current) {
             initialConfig.current = JSON.parse(Base64.decode(wacf7Config));
@@ -27,8 +28,17 @@ export default function WaCF7Panel() {
     const onChangeHandler = (newConfig) => {
         setStatus({ status: "normal" });
         setConfig(newConfig);
+        notSavedRef.current = true;
         return;
     };
+
+    useEffect(() => {
+        const closeHandler = () => {
+            if (notSavedRef.current) return confirm("Есть несохранённые изменения. Всё равно уходим?");
+        };
+        window.onbeforeunload = closeHandler;
+        return () => (window.onbeforeunload = undefined);
+    }, []);
 
     const onSaveHandler = async () => {
         setStatus({ status: "loading" });
@@ -55,7 +65,10 @@ export default function WaCF7Panel() {
                 status: "error",
                 message: json.message ? json.message : "Некорректный ответ сервера",
             });
-        else setStatus({ status: "success", message: "Настройки успешно сохранены" });
+        else {
+            setStatus({ status: "success", message: "Настройки успешно сохранены" });
+            notSavedRef.current = false;
+        }
     };
     return (
         <div className="wacf7-container">
@@ -71,6 +84,11 @@ export default function WaCF7Panel() {
                 }}
             </WaTabs>
             <Container title="Сохранение" style={{ minWidth: "200px", maxWidth: "300px", flexGrow: 0 }}>
+                {notSavedRef.current && (
+                    <div className="wa-error-message" style={{ maxWidth: "171px" }}>
+                        Изменения не сохранены
+                    </div>
+                )}
                 <button
                     onClick={onSaveHandler}
                     className={classes("button button-primary", {

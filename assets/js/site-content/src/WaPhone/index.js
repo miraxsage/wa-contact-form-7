@@ -71,7 +71,7 @@ export default function WaPhone({ name, require, locale: localeCode, country, ..
         return () => abort.abort();
     }, []);
     return (
-        <div className="wa-phone-container" ref={rootRef}>
+        <div className="wa-cf7-phone-container" ref={rootRef}>
             <input
                 type="hidden"
                 name={name}

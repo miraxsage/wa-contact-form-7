@@ -102,12 +102,11 @@ if(wp_doing_ajax()){
     add_action('wp_ajax_wacf7', function(){
         $json = file_get_contents('php://input');
         try{
-            $config = (array)json_decode(base64_decode($json));
+            $config = json_decode(base64_decode($json));
         }
         catch(Exception $exc){
             return return_ajax_error("Некорректные параметры");
         }
-        //$config = valid_config_or_null($config);
         if(!$config)
             return return_ajax_error("Некорректные параметры");
 
@@ -128,8 +127,10 @@ if(wp_doing_ajax()){
         global $wpdb;
         $wacf7_logs_tb = WACF7_LOGS_TB;
         $wacf7_logs_fields_tb = WACF7_LOGS_FIELDS_TB;
-        $wpdb->query("delete from $wacf7_logs_tb where $deleted_forms_condition");
-        $wpdb->query("delete from $wacf7_logs_fields_tb where $deleted_forms_condition");
+        if(!empty($deleted_forms_condition)){
+            $wpdb->query("delete from $wacf7_logs_tb where $deleted_forms_condition");
+            $wpdb->query("delete from $wacf7_logs_fields_tb where $deleted_forms_condition");
+        }
         update_option('wacf7-config', $config ? base64_encode(json_encode($config)) : "");
 
         echo '{"success": true}';

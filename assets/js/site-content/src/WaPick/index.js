@@ -55,7 +55,7 @@ export default function WaPick({ name, require, variants, multiple = 1, ...props
     }, []);
     return (
         <>
-            <div ref={rootRef} className={classes("wa-pick-container", { invalid: !!error })}>
+            <div ref={rootRef} className={classes("wa-cf7-pick-container", { invalid: !!error })}>
                 <input type="hidden" name={name} value={formValue} />
                 {variants.map(({ name, nameHash, icon, iconSide }) => {
                     return (
