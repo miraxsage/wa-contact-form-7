@@ -1,19 +1,25 @@
-import { React, useState, useLayoutEffect, useRef } from "react";
+import { React, useState, useLayoutEffect, useRef, useMemo } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import "./index.scss";
-import auto_locale from "../WaPhone/auto-locale.json";
+import en_locale from "../WaPhone/en-locale.json";
 import ru_locale from "react-phone-input-2/lang/ru.json";
+import auto_locale from "../WaPhone/auto-locale.json";
+import { combineLocalesSources } from "../WaPhone";
 
-export default function WaCountry({ name, require, locale, country: initialCountry, ...props }) {
-    const [error, setError] = useState();
+export default function WaCountry({ name, require, locale: localeCode, country: initialCountry, ...props }) {
     const [country, setCountry] = useState(initialCountry);
     const rootRef = useRef();
-    let localization = undefined;
-    if (locale) {
-        if (locale == "ru") localization = ru_locale;
-        if (locale == "auto") localization = auto_locale;
-    }
+    const localization = useMemo(() => {
+        if (localeCode) {
+            if (localeCode == "en") return en_locale;
+            if (localeCode == "ru") return ru_locale;
+            if (localeCode == "auto") return auto_locale;
+            if (localeCode.match(/(ru|en|auto)_(ru|en|auto)/))
+                return combineLocalesSources(localeCode.split("_")[0], localeCode.split("_")[1]);
+            return undefined;
+        }
+    }, localeCode);
     if (typeof initialCountry != "string" || !initialCountry) initialCountry = undefined;
     const replaceInputByCountryRef = useRef();
     replaceInputByCountryRef.current = (e) => {
@@ -49,7 +55,6 @@ export default function WaCountry({ name, require, locale, country: initialCount
                 country={initialCountry}
                 {...props}
             />
-            {error && <span className="wpcf7-not-valid-tip">{error}</span>}
         </div>
     );
 }

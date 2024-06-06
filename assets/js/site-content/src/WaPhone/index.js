@@ -1,21 +1,43 @@
-import { React, useState, useEffect, useRef } from "react";
+import { React, useState, useEffect, useRef, useMemo } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import "./index.scss";
-import auto_locale from "./auto-locale.json";
+import en_locale from "./en-locale.json";
 import ru_locale from "react-phone-input-2/lang/ru.json";
+import auto_locale from "./auto-locale.json";
 
-export default function WaPhone({ name, require, locale, country, ...props }) {
+export function retrieveLocaleSource(localeCode) {
+    if (localeCode == "ru") return ru_locale;
+    if (localeCode == "en") return en_locale;
+    if (localeCode == "auto") return auto_locale;
+}
+export function combineLocalesSources(localeACode, localeBCode) {
+    const localeA = retrieveLocaleSource(localeACode);
+    const localeB = retrieveLocaleSource(localeBCode);
+    const resultLocale = Object.fromEntries(
+        Object.keys(localeA).map((key) => [
+            key,
+            localeA[key] == localeB[key] ? localeA[key] : `${localeA[key]} (${localeB[key]})`,
+        ]),
+    );
+    return resultLocale;
+}
+
+export default function WaPhone({ name, require, locale: localeCode, country, ...props }) {
     const [phone, setPhone] = useState("");
     const [error, setError] = useState();
     const [showUnvalid, setShowUnvalid] = useState(false);
     const [isValid, setIsValid] = useState(false);
     const rootRef = useRef();
-    let localization = undefined;
-    if (locale) {
-        if (locale == "ru") localization = ru_locale;
-        if (locale == "auto") localization = auto_locale;
-    }
+    const localization = useMemo(() => {
+        if (localeCode) {
+            if (localeCode == "en") return en_locale;
+            if (localeCode == "ru") return ru_locale;
+            if (localeCode == "auto") return auto_locale;
+            if (localeCode.match(/(ru|en|auto)_(ru|en|auto)/))
+                return combineLocalesSources(localeCode.split("_")[0], localeCode.split("_")[1]);
+        }
+    }, localeCode);
     if (typeof country != "string" || !country) country = undefined;
     useEffect(() => {
         const form = rootRef.current?.closest("form");

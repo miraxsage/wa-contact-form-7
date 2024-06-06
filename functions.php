@@ -268,7 +268,7 @@ function wa_tel_country_tag_handler($tag){
             foreach(explode(".", $matches[1]) as $c)
                 $countries[] = strtolower(trim($c));
             $props["preferredCountries"] = $countries;
-        } else if(preg_match("/^locale:((?:[a-z]{2})|(?:auto))$/i", $opt, $matches) === 1){
+        } else if(preg_match("/^locale:((?:[a-z]{2})|(?:auto)|(?:auto_[a-z]{2})|(?:[a-z]{2}_[a-z]{2}))$/i", $opt, $matches) === 1){
             $props["locale"] = strtolower($matches[1]);
         } else if(preg_match("/^country:((?:[a-z]{2})|(?:auto))$/i", $opt, $matches) === 1){
             if($matches[1] == "auto"){
