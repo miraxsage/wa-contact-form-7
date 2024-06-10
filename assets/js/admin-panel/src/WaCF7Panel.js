@@ -4,6 +4,7 @@ import classes from "classnames";
 import { Base64 } from "./services";
 import WaTabs from "./WaTabs";
 import LoggerSettings from "./LoggerSettings";
+import VisualSettingsManual from "./VisualSettingsManual";
 
 const defaultConfig = {
     logForms: [],
@@ -74,7 +75,7 @@ export default function WaCF7Panel() {
         <div className="wacf7-container">
             <WaTabs>
                 {{
-                    "Визуальные настройки": "HTML-справка",
+                    "Визуальные настройки": <VisualSettingsManual />,
                     "CSV-логирование сообщений": (
                         <LoggerSettings
                             config={config.logForms}

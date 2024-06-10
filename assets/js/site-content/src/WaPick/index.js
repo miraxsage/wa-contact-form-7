@@ -7,7 +7,11 @@ function Icon({ src }) {
 }
 
 export default function WaPick({ name, require, variants, multiple = 1, ...props }) {
-    const [checkedVariants, setCheckedVariants] = useState([]);
+    let initiallySelectedVariants = variants
+        .filter(({ selected }) => selected)
+        .map(({ nameHash }) => nameHash)
+        .slice(0, typeof multiple == "number" ? multiple : undefined);
+    const [checkedVariants, setCheckedVariants] = useState(initiallySelectedVariants);
     const rootRef = useRef();
     const [error, setError] = useState();
     const onChecked = (hash) => {

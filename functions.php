@@ -311,6 +311,9 @@ function wa_pick_tag_handler($tag){
                 $variant["icon"] = $part;
                 $variant["iconSide"] = array_key_exists("name", $variant) ? "right" : "left";
             }
+            elseif($part == "selected"){
+                $variant["selected"] = true;
+            }
             else{
                 $variant["name"] = $part;
                 $variant["nameHash"] = substr(md5($part), 0, 10);

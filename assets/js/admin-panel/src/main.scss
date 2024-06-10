@@ -84,6 +84,21 @@
         l20-1 0.8s infinite linear alternate,
         l20-2 1.6s infinite linear;
 }
+.proper-text {
+    color: #015f1a;
+    padding: 0px 4px;
+    background: #f2ffec;
+}
+.wrong-text {
+    color: #bd0a0a;
+    padding: 0px 4px;
+    background: #ffeded;
+}
+.blue-text {
+    color: #0f4792;
+    padding: 0px 4px;
+    background: #ecf7ff;
+}
 @keyframes l20-1 {
     0% {
         clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
