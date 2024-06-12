@@ -1,4 +1,4 @@
-import { React, useState, useEffect, useRef } from "react";
+import { React, useState, useEffect, useRef, useId } from "react";
 import "./index.scss";
 import classes from "classnames";
 
@@ -13,6 +13,7 @@ export default function WaPick({ name, require, variants, multiple = 1, ...props
         .slice(0, typeof multiple == "number" ? multiple : undefined);
     const [checkedVariants, setCheckedVariants] = useState(initiallySelectedVariants);
     const rootRef = useRef();
+    const id = useId();
     const [error, setError] = useState();
     const onChecked = (hash) => {
         const isChecking = !checkedVariants.includes(hash);
@@ -68,9 +69,9 @@ export default function WaPick({ name, require, variants, multiple = 1, ...props
                                 type="checkbox"
                                 checked={checkedVariants.includes(nameHash)}
                                 onChange={() => onChecked(nameHash)}
-                                id={nameHash}
+                                id={"wa-pick-option-" + id + "-" + nameHash}
                             />
-                            <label for={nameHash}>
+                            <label for={"wa-pick-option-" + id + "-" + nameHash}>
                                 {icon && iconSide == "left" && <Icon src={icon} />}
                                 {name}
                                 {icon && iconSide == "right" && <Icon src={icon} />}
