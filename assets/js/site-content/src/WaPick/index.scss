@@ -27,12 +27,7 @@
         }
     }
     & input {
-        visibility: collapse;
-        width: 0;
-        clip: rect(0, 0, 0, 0);
-        margin: 0;
-        height: 0;
-        overflow: hidden;
+        display: none !important;
     }
     & img {
         width: 25px;
