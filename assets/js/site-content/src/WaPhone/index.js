@@ -23,7 +23,7 @@ export function combineLocalesSources(localeACode, localeBCode) {
     return resultLocale;
 }
 
-export default function WaPhone({ name, require, locale: localeCode, country, ...props }) {
+export default function WaPhone({ id: rootId, name, require, locale: localeCode, country, ...props }) {
     const [phone, setPhone] = useState();
     const [error, setError] = useState();
     const countryCodeRef = useRef();
@@ -70,9 +70,18 @@ export default function WaPhone({ name, require, locale: localeCode, country, ..
         );
         return () => abort.abort();
     }, []);
+    const formValue =
+        isValid && !error && rootRef.current ? rootRef.current.querySelector("input.form-control").value : "";
+    useEffect(() => {
+        let hidden = document.querySelector("#" + rootId + "_hidden");
+        if (hidden) {
+            hidden.value = formValue;
+            if (typeof jQuery != "undefined") jQuery(hidden).change();
+        }
+    }, [formValue]);
     return (
         <div className="wa-cf7-phone-container" ref={rootRef}>
-            <input
+            {/* <input
                 type="hidden"
                 name={name}
                 value={
@@ -80,7 +89,7 @@ export default function WaPhone({ name, require, locale: localeCode, country, ..
                         ? rootRef.current.querySelector("input.form-control").value
                         : ""
                 }
-            />
+            /> */}
             <PhoneInput
                 enableSearch={true}
                 value={phone}

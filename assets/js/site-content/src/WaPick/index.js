@@ -6,7 +6,7 @@ function Icon({ src }) {
     return <img src={src} alt="" />;
 }
 
-export default function WaPick({ name, require, variants, multiple = 1, ...props }) {
+export default function WaPick({ id: rootId, name, require, variants, multiple = 1, ...props }) {
     let initiallySelectedVariants = variants
         .filter(({ selected }) => selected)
         .map(({ nameHash }) => nameHash)
@@ -58,10 +58,17 @@ export default function WaPick({ name, require, variants, multiple = 1, ...props
         );
         return () => abort.abort();
     }, []);
+    useEffect(() => {
+        let hidden = document.querySelector("#" + rootId + "_hidden");
+        if (hidden) {
+            hidden.value = formValue;
+            if (typeof jQuery != "undefined") jQuery(hidden).change();
+        }
+    }, [formValue]);
     return (
         <>
+            {/* <input type="hidden" name={name} value={formValue} />*/}
             <div ref={rootRef} className={classes("wa-cf7-pick-container", { invalid: !!error })}>
-                <input type="hidden" name={name} value={formValue} />
                 {variants.map(({ name, nameHash, icon, iconSide }) => {
                     return (
                         <>

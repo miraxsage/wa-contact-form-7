@@ -288,11 +288,12 @@ function wa_tel_country_tag_handler($tag){
     }
 
     $el_id = uniqid(preg_replace("/[^a-z_]/i", "", $tag->type)."_");
+    $props["id"] = $el_id;
     $inline_code = "const $el_id = document.querySelector('#$el_id');
     if($el_id)
         window.".(str_starts_with($tag->type, "wa_tel") ? "useWaPhone" : "useWaCountry")."($el_id, ".json_encode((object)$props).");";
     enqueue_wacf7_site_resources($inline_code);
-    return "<div id=\"$el_id\"></div>";
+    return "<input type=\"hidden\" name=\"".$props["name"]."\" id=\"".$el_id."_hidden\" /><div id=\"$el_id\"></div>";
 }
 
 function wa_pick_tag_handler($tag){
@@ -324,11 +325,12 @@ function wa_pick_tag_handler($tag){
     $props["variants"] = $variants;
 
     $el_id = uniqid(preg_replace("/[^a-z_]/i", "", $tag->type)."_");
+    $props["id"] = $el_id;
     $inline_code = "const $el_id = document.querySelector('#$el_id');
     if($el_id)
         window.useWaPick($el_id, ".json_encode((object)$props).");";
     enqueue_wacf7_site_resources($inline_code);
-    return "<div id=\"$el_id\"></div>";
+    return "<input type=\"hidden\" name=\"".$props["name"]."\" id=\"".$el_id."_hidden\" /><div id=\"$el_id\"></div>";
 }
 
 

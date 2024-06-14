@@ -1,4 +1,4 @@
-import { React, useState, useLayoutEffect, useRef, useMemo } from "react";
+import { React, useState, useLayoutEffect, useRef, useMemo, useEffect } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 import "./index.scss";
@@ -7,7 +7,14 @@ import ru_locale from "react-phone-input-2/lang/ru.json";
 import auto_locale from "../WaPhone/auto-locale.json";
 import { combineLocalesSources } from "../WaPhone";
 
-export default function WaCountry({ name, require, locale: localeCode, country: initialCountry, ...props }) {
+export default function WaCountry({
+    id: rootId,
+    name,
+    require,
+    locale: localeCode,
+    country: initialCountry,
+    ...props
+}) {
     const [country, setCountry] = useState(initialCountry);
     const rootRef = useRef();
     const localization = useMemo(() => {
@@ -53,9 +60,17 @@ export default function WaCountry({ name, require, locale: localeCode, country: 
         replaceInputByCountryRef.current();
         return () => observer.disconnect();
     }, []);
+    const formValue = localization[country];
+    useEffect(() => {
+        let hidden = document.querySelector("#" + rootId + "_hidden");
+        if (hidden) {
+            hidden.value = formValue;
+            if (typeof jQuery != "undefined") jQuery(hidden).change();
+        }
+    }, [formValue]);
     return (
         <div className="wa-cf7-country-container" ref={rootRef}>
-            <input type="hidden" name={name} value={localization[country]} />
+            {/* <input type="hidden" name={name} value={localization[country]} /> */}
             <PhoneInput
                 enableSearch={true}
                 onChange={(val, { countryCode }) => {
